@@ -1,0 +1,38 @@
+#table-body .ag-root-wrapper-body{
+  height: fit-content;
+}
+
+.database-menu{
+  padding: 1em;
+}
+
+.database-menu input{
+  max-width: 12em;
+}
+
+.database-menu input:hover{
+  border: 1px solid #2e85a8;
+}
+
+.database-menu select{
+  padding: 2px;
+}
+
+.database-menu select option{
+  margin: 2em;
+}
+
+#table-menu{
+  display: none;
+  position: fixed;
+  left: 0;
+  top: 0;
+}
+
+#table-menu:hover{
+  border: 1px solid #2e85a8;
+}
+
+#table-menu ul{
+  list-style: none;
+}
