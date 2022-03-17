@@ -3,4 +3,6 @@ export default {
   welcome: 'loading Agtable plugin',
   createTable: 'create table',
   resolveTableFailed: 'resolve table failed!',
+  addRowBelow: 'Add row below',
+  deleteThisRow: 'Delete this row'
 }

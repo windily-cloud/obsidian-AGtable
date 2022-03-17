@@ -28,7 +28,11 @@ export default class AgtablePlugin extends Plugin {
       if (!source && !tableId && !tableString) {
         return
       } else {
-        const view = React.createElement(TableView, { tableString, tableId })
+        const view = React.createElement(TableView, {
+          app: this.app,
+          tableString,
+          tableId,
+        })
         ReactDOM.render(view, el)
       }
     })

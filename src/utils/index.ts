@@ -1,3 +1,9 @@
+import { ColDef } from 'ag-grid-community'
+interface DataGridTable {
+  column: ColDef[]
+  row: Array<{ [index: string]: string }>
+}
+
 export function generateRandomStr(length: number) {
   let result = ''
   const chars =
@@ -14,45 +20,62 @@ export function generateUUID() {
   return uuid.substr(uuid.lastIndexOf('/') + 1)
 }
 
-export function parseMarkdownTable(
+export function markdownTableToDataGrid(
   tableString: string
-): Array<string[]> | void {
-  if (tableString) {
-    tableString = tableString.trim()
-
-    const lines = tableString.split('\n')
-    if (lines.length < 2) {
-      return
-    }
-
-    let headers = lines[0].split('|')
-    headers = headers.splice(1, headers.length - 2)
-
-    if (headers.length <= 1) {
-      return
-    }
-
-    let rows
-    if (lines.length > 2) {
-      rows = lines.splice(2).map((line: string) => line.split('|'))
-    }
-
-    for (let idx = 0; idx < rows.length; idx++) {
-      rows[idx] = rows[idx].splice(1, rows[idx].length - 2)
-    }
-
-    const result: string[][] = []
-    for (let i = 0; i < rows.length + 1; i++) {
-      const data = i === 0 ? headers : rows[i - 1]
-      const rowResult = []
-      for (let colIdx = 0; colIdx < data.length; colIdx++) {
-        rowResult.push(data[colIdx].trim())
-      }
-      result.push(rowResult)
-    }
-
-    return result
+): DataGridTable | void {
+  if (!tableString) {
+    return
   }
 
-  return
+  const lines = tableString.trim().split('\n')
+
+  if (lines.length < 2) {
+    return
+  }
+
+  let columnDef = lines[0].split('|')
+  columnDef.shift()
+  columnDef.pop()
+
+  let column = columnDef.map((el: string) => {
+    return {
+      field: el,
+    }
+  })
+
+  let row = lines.slice(2).map((line: string) => {
+    const rowList = line.split('|')
+    rowList.shift()
+    rowList.pop()
+    const rowItem = rowList.map((value: string, index: number) => {
+      rowItem[columnDef[index]] = value
+    })
+    return Object.assign({}, ...rowItem)
+  })
+
+  return {
+    column,
+    row,
+  }
+}
+
+export function dataGridToMarkdownTable(dataGrid: DataGridTable): string {
+  const { column, row } = dataGrid
+
+  let header = '|'
+  let marker = '|'
+  column.forEach((el) => {
+    header += el.field + '|'
+    marker += '----|'
+  })
+
+  let rowItem = row.map((el) => {
+    const rowData = Object.values(el)
+    const rowLine = '|' + rowData.join('|') + '|'
+    return rowLine
+  })
+
+  let rowString = rowItem.join('\n')
+
+  return header + '\n' + marker + '\n' + rowString
 }
