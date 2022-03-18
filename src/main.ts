@@ -24,7 +24,7 @@ export default class AgtablePlugin extends Plugin {
         /tableId:\W[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\W/,
         ''
       )
-      console.log(tableId, tableString)
+      //console.log(tableId, tableString)
       if (!source && !tableId && !tableString) {
         return
       } else {

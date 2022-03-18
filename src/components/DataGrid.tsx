@@ -11,7 +11,13 @@ import {
 import CustomFilter from '../components/CustomFilter'
 import ReactDOM from 'react-dom'
 import t from '../i18n'
-import { ColDef } from 'ag-grid-community'
+import {
+  CellEditingStoppedEvent,
+  ColDef,
+  ColumnMovedEvent,
+  DragStoppedEvent,
+  RowDragEvent,
+} from 'ag-grid-community'
 
 interface Props {
   app: App
@@ -33,7 +39,7 @@ export default function DataGrid(props: Props) {
     props.tableString
   ) as DataGridTable
 
-  console.log(column, row)
+  //console.log(column, row)
 
   //ag-grid init
   const [columnDefs] = useState(column)
@@ -110,7 +116,7 @@ export default function DataGrid(props: Props) {
   }
 
   function handleContextMenu(e: any) {
-    console.log(e)
+    //console.log(e)
     localStorage.setItem('agTableRowIndex', e.rowIndex)
     let rightclick = document.getElementById('table-menu')
     let clientx = e.event.pageX
@@ -129,6 +135,76 @@ export default function DataGrid(props: Props) {
     }
   })
 
+  //cell edit setting
+  function onCellEditingStopped(event: CellEditingStoppedEvent) {
+    console.log(event)
+  }
+
+  //column drag
+  function onColumnMoved(event: ColumnMovedEvent) {
+    console.log(event.api)
+    const colId = event.column.getColId()
+    const toIndex = event.toIndex
+    console.log('start drag', colId, toIndex)
+    const newColumn = column.filter((el: ColDef) => {
+      return el.field != colId
+    })
+
+    newColumn.splice(toIndex, 0, { field: colId })
+    console.log(newColumn)
+
+    console.log('process row:', rowData)
+    const newRow: Array<{ [key: string]: string }> = []
+    console.log(rowData)
+    rowData.map((rowItem: { [index: string]: string }) => {
+      const rowList = Object.entries(rowItem)
+      console.log('rowList:', rowList)
+      let fromIndex: number
+      rowList.some((el, index) => {
+        if (el[0] === colId) {
+          fromIndex = index
+          return true
+        }
+      })
+      console.log(fromIndex, toIndex)
+      if (toIndex < fromIndex) {
+        const deletedItem = rowList.splice(fromIndex, 1)
+        console.log('deleteItem:', deletedItem)
+        rowList.splice(toIndex, 0, deletedItem[0])
+        console.log(rowList)
+      } else {
+        rowList.splice(toIndex + 1, 0, rowList[fromIndex])
+        rowList.splice(fromIndex, 1)
+      }
+      const rowObj = rowList.map((el: string[]) => {
+        return {
+          [el[0]]: el[1],
+        }
+      })
+      const row = Object.assign({}, ...rowObj)
+      console.log('row:', row)
+      newRow.push(row)
+      console.log(newRow)
+    })
+
+    const tableString = dataGridToMarkdownTable({
+      column: newColumn,
+      row: newRow,
+    })
+    localStorage.setItem('agTabelMovedString', tableString)
+  }
+
+  function onDragStopped(event: DragStoppedEvent) {
+    //console.log('darg end:', event)
+    const tableString = localStorage.getItem('agTabelMovedString')
+    replaceTable(props.app, props.tableId, tableString)
+  }
+
+  //row drag
+  function onRowDragEnd(event: RowDragEvent) {
+    console.log(event)
+  }
+
   return (
     <div
       id="table-body"
@@ -145,6 +221,10 @@ export default function DataGrid(props: Props) {
         suppressContextMenu={true}
         preventDefaultOnContextMenu={true}
         onCellContextMenu={handleContextMenu}
+        onCellEditingStopped={onCellEditingStopped}
+        onRowDragEnd={onRowDragEnd}
+        onColumnMoved={onColumnMoved}
+        onDragStopped={onDragStopped}
       ></AgGridReact>
     </div>
   )

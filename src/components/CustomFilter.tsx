@@ -106,7 +106,7 @@ export default class CustomFilter extends Component<Props> {
           [el[0]]: el[1],
         }
       })
-      rowList.splice(index, 0, { [`new column ${newColumnIndex}`]: '' })
+      rowList.splice(index + 1, 0, { [`new column ${newColumnIndex}`]: '' })
       const row = Object.assign({}, ...rowList)
       newRow.push(row)
     })
