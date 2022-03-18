@@ -2,7 +2,7 @@ import React from 'react'
 import { App } from 'obsidian'
 import DataGrid from 'components/DataGrid'
 import ErrorBoundary from 'components/ErrorBoundary'
-import "../styles/TableView.css"
+import '../styles/TableView.css'
 
 interface Props {
   app: App

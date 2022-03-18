@@ -3,9 +3,12 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { AgGridReact } from 'ag-grid-react'
 import 'ag-grid-community/dist/styles/ag-grid.css'
 import 'ag-grid-community/dist/styles/ag-theme-alpine-dark.css'
-import { markdownTableToDataGrid } from '../utils'
+import {
+  dataGridToMarkdownTable,
+  markdownTableToDataGrid,
+  replaceTable,
+} from '../utils'
 import CustomFilter from '../components/CustomFilter'
-import { CellContextMenuEvent } from 'ag-grid-community'
 import ReactDOM from 'react-dom'
 import t from '../i18n'
 import { ColDef } from 'ag-grid-community'
@@ -24,23 +27,29 @@ interface DataGridTable {
 export default function DataGrid(props: Props) {
   //data init
   if (!markdownTableToDataGrid(props.tableString)) {
-    console.log("parse markdwon table failed!")
+    console.log('parse markdwon table failed!')
   }
-  const { column, row } = markdownTableToDataGrid(props.tableString) as DataGridTable
+  const { column, row } = markdownTableToDataGrid(
+    props.tableString
+  ) as DataGridTable
 
   console.log(column, row)
 
   //ag-grid init
-  const [columnDefs, setColumnDef] = useState(column)
-  const [rowData, setRowData] = useState(row)
+  const [columnDefs] = useState(column)
+  const [rowData] = useState(row)
 
   const defaultColDef = useMemo(
     () => ({
       resizable: true,
-      sortable: true,
+      // sortable: true,
       flex: 1,
       editable: true,
       filter: CustomFilter,
+      filterParams: {
+        app: props.app,
+        tableId: props.tableId,
+      },
     }),
     []
   )
@@ -61,27 +70,52 @@ export default function DataGrid(props: Props) {
       })
     })
 
-    function handleAddRow() {
-      setRowData({
-        ...rowData,
+    function handleAddRowBelow() {
+      const newRowList = columnDefs.map((el: { [key: string]: string }) => {
+        return {
+          [el.field]: '',
+        }
       })
+
+      const newRow = Object.assign({}, ...newRowList)
+      const rowIndex = localStorage.getItem('agTableRowIndex')
+      rowData.splice(parseInt(rowIndex) + 1, 0, newRow)
+      const tableString = dataGridToMarkdownTable({
+        column: column,
+        row: rowData,
+      })
+      replaceTable(props.app, props.tableId, tableString)
+      setVisible({ visible: false })
     }
+
+    function handleDeleteThisRow() {
+      const rowIndex = localStorage.getItem('agTableRowIndex')
+      rowData.splice(parseInt(rowIndex), 1)
+      const tableString = dataGridToMarkdownTable({
+        column: column,
+        row: rowData,
+      })
+      replaceTable(props.app, props.tableId, tableString)
+      setVisible({ visible: false })
+    }
+
     return (
       visible.visible && (
-        <div id="table-menu" className="ag-popup" ref={menuRef}>
-          <button>{t('addRowBelow')}</button>
-          <button>{t('deleteThisRow')}</button>
+        <div id="table-menu" ref={menuRef}>
+          <div onClick={handleAddRowBelow}>{t('addRowBelow')}</div>
+          <div onClick={handleDeleteThisRow}>{t('deleteThisRow')}</div>
         </div>
       )
     )
   }
 
   function handleContextMenu(e: any) {
-    console.log(e.event)
+    console.log(e)
+    localStorage.setItem('agTableRowIndex', e.rowIndex)
     let rightclick = document.getElementById('table-menu')
     let clientx = e.event.pageX
     let clienty = e.event.pageY
-    rightclick.style.display = 'block'
+    rightclick.style.display = 'flex'
     rightclick.style.left = clientx + 'px'
     rightclick.style.top = clienty + 'px'
   }

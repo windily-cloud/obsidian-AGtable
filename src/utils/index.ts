@@ -1,4 +1,5 @@
 import { ColDef } from 'ag-grid-community'
+import { App } from 'obsidian'
 interface DataGridTable {
   column: ColDef[]
   row: Array<{ [index: string]: string }>
@@ -48,7 +49,9 @@ export function markdownTableToDataGrid(
     rowList.shift()
     rowList.pop()
     const rowItem = rowList.map((value: string, index: number) => {
-      rowItem[columnDef[index]] = value
+      return {
+        [columnDef[index]]: value,
+      }
     })
     return Object.assign({}, ...rowItem)
   })
@@ -78,4 +81,17 @@ export function dataGridToMarkdownTable(dataGrid: DataGridTable): string {
   let rowString = rowItem.join('\n')
 
   return header + '\n' + marker + '\n' + rowString
+}
+
+export async function replaceTable(
+  app: App,
+  tableId: string,
+  tableString: string
+) {
+  const fileContent = await app.vault.cachedRead(app.workspace.getActiveFile())
+  const replaceReg = new RegExp(
+    `(?<=tableId:\\s${tableId}\\s)[\\w\\W]*(?=\\W+\`\`\`)`
+  )
+  const newFileContent = fileContent.replace(replaceReg, tableString)
+  app.vault.modify(app.workspace.getActiveFile(), newFileContent)
 }

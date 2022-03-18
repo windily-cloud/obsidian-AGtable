@@ -1,20 +1,32 @@
-import React, { Component } from 'react';
-import { ColumnEventType, IFilterParams } from 'ag-grid-community';
+import React, { Component, MouseEventHandler, RefObject } from 'react'
+import { ColumnEventType, IFilterParams, RowNode } from 'ag-grid-community'
+import { ColDef } from 'ag-grid-community'
+import { App } from 'obsidian'
+import { dataGridToMarkdownTable, replaceTable } from 'utils'
 
-interface Props extends IFilterParams{}
-
-export default class YearFilter extends Component<Props> {
-  constructor(props:Props) {
-    super(props);
+interface Props extends IFilterParams {
+  app: App
+  tableId: string
+}
+interface RowData {
+  [key: string]: string
+}
+export default class CustomFilter extends Component<Props> {
+  private inputRef: RefObject<HTMLInputElement>
+  constructor(props: Props) {
+    super(props)
+    this.inputRef = React.createRef()
     this.addColumn = this.addColumn.bind(this)
+    this.deleteColumn = this.deleteColumn.bind(this)
+    this.renameColumn = this.renameColumn.bind(this)
   }
 
-  doesFilterPass(params:any) {
-    return true;
+  doesFilterPass(params: any) {
+    return true
   }
 
   isFilterActive() {
-    return true;
+    return true
   }
 
   // this example isn't using getModel() and setModel(),
@@ -23,25 +35,134 @@ export default class YearFilter extends Component<Props> {
 
   setModel() {}
 
-  addColumn(event:any){
+  renameColumn() {
+    const newName = this.inputRef.current.value
+    const thisColumn = this.props.column.getColId()
     const columns = this.props.api.getColumnDefs()
-    this.props.api.setColumnDefs([...columns, {field: "name"}])
-    console.log(this.props.api.forEachNode((item)=>{
-      console.log(item.data)
-    }))
+    //console.log(thisColumn, columns)
+    const newColumns = columns.map((el: ColDef) => {
+      if (el.colId === thisColumn) {
+        el.field = newName
+        el.colId = newName
+        return el
+      }
+      return el
+    })
+    //console.log('row model:', this.props.rowModel)
+    this.props.api.setColumnDefs(newColumns)
+
+    const newRow: Array<{ [key: string]: string }> = []
+    this.props.api.getModel().forEachNode((rowNode: RowNode) => {
+      console.log(rowNode.data)
+      const rowList = Object.entries(rowNode.data).map((el: RowData) => {
+        if (el[0] === thisColumn) {
+          return {
+            [newName]: el[1],
+          }
+        } else {
+          return {
+            [el[0]]: el[1],
+          }
+        }
+      })
+
+      const row = Object.assign({}, ...rowList)
+      newRow.push(row)
+    })
+    console.log(newRow)
+    this.props.api.setRowData(newRow)
+
+    const column = this.props.api.getColumnDefs()
+    const tableString = dataGridToMarkdownTable({
+      column: column,
+      row: newRow,
+    })
+    replaceTable(this.props.app, this.props.tableId, tableString)
   }
 
-  deleteColumn(){
+  addColumn() {
+    const thisColumn = this.props.column.getColId()
+    const column = this.props.api.getColumnDefs()
+    const index = column
+      .map((el: ColDef) => {
+        return el.colId
+      })
+      .indexOf(thisColumn)
 
+    let newColumnIndex = 0
+    column.forEach((el: ColDef) => {
+      if (el.colId.startsWith('new column')) {
+        newColumnIndex += 1
+      }
+    })
+    column.splice(index + 1, 0, { field: `new column ${newColumnIndex}` })
+
+    this.props.api.setColumnDefs(column)
+
+    const newRow: Array<{ [key: string]: string }> = []
+    this.props.api.getModel().forEachNode((rowNode: RowNode) => {
+      const rowList = Object.entries(rowNode.data).map((el: RowData) => {
+        return {
+          [el[0]]: el[1],
+        }
+      })
+      rowList.splice(index, 0, { [`new column ${newColumnIndex}`]: '' })
+      const row = Object.assign({}, ...rowList)
+      newRow.push(row)
+    })
+
+    const tableString = dataGridToMarkdownTable({
+      column: column,
+      row: newRow,
+    })
+    replaceTable(this.props.app, this.props.tableId, tableString)
+  }
+
+  deleteColumn() {
+    const thisColumn = this.props.column.getColId()
+    const columns = this.props.api.getColumnDefs()
+    let index: number
+    const newColumns = columns.filter((el: ColDef, idx: number) => {
+      if (el.colId === thisColumn) {
+        index = idx
+      }
+      return el.colId != thisColumn
+    })
+    this.props.api.setColumnDefs(newColumns)
+
+    const newRow: Array<{ [key: string]: string }> = []
+    this.props.api.getModel().forEachNode((rowNode: RowNode) => {
+      const rowList = Object.entries(rowNode.data).map((el: RowData) => {
+        return {
+          [el[0]]: el[1],
+        }
+      })
+      rowList.splice(index, 1)
+      const row = Object.assign({}, ...rowList)
+      newRow.push(row)
+    })
+    const column = this.props.api.getColumnDefs()
+    const tableString = dataGridToMarkdownTable({
+      column: column,
+      row: newRow,
+    })
+    replaceTable(this.props.app, this.props.tableId, tableString)
   }
 
   render() {
     return (
-      <div className="database-menu">
-          <input type="text" placeholder={this.props.colDef.field}/>
-          <button onClick={this.addColumn}>Add a column</button>
-          <button>Delete this column</button>
+      <div id="column-menu">
+        <div>
+          <input
+            ref={this.inputRef}
+            type="text"
+            placeholder={this.props.colDef.field}
+          />
+          <label onClick={this.renameColumn}>confirm</label>
+        </div>
+        <div onClick={this.addColumn}>Add a column</div>
+        <div onClick={this.deleteColumn}>Delete this column</div>
       </div>
-    );
+    )
   }
 }

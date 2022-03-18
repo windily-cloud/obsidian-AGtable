@@ -1,38 +1,49 @@
-#table-body .ag-root-wrapper-body{
+#table-body .ag-root-wrapper-body {
   height: fit-content;
 }
 
-.database-menu{
+#column-menu {
   padding: 1em;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
-.database-menu input{
+#column-menu input {
   max-width: 12em;
 }
 
-.database-menu input:hover{
+#column-menu input:hover {
   border: 1px solid #2e85a8;
 }
 
-.database-menu select{
-  padding: 2px;
+#column-menu div {
+  width: 100%;
+  color: var(--text-normal);
+  margin: 2px;
 }
 
-.database-menu select option{
-  margin: 2em;
+#column-menu div:hover {
+  background-color: var(--interactive-hover);
 }
 
-#table-menu{
+#table-menu {
   display: none;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0.5em;
+  background-color: var(--background-primary);
   position: fixed;
   left: 0;
   top: 0;
 }
 
-#table-menu:hover{
-  border: 1px solid #2e85a8;
+#table-menu div {
+  width: 100%;
+  color: var(--text-normal);
+  margin: 2px;
 }
 
-#table-menu ul{
-  list-style: none;
+#table-menu div:hover {
+  background-color: var(--interactive-hover);
 }
