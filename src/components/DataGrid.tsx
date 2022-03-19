@@ -3,8 +3,10 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { AgGridReact } from 'ag-grid-react'
 import 'ag-grid-community/dist/styles/ag-grid.css'
 import 'ag-grid-community/dist/styles/ag-theme-alpine-dark.css'
+import 'ag-grid-community/dist/styles/ag-theme-alpine.css'
 import {
   dataGridToMarkdownTable,
+  isObjShallowEqual,
   markdownTableToDataGrid,
   replaceTable,
 } from '../utils'
@@ -31,6 +33,8 @@ interface DataGridTable {
 }
 
 export default function DataGrid(props: Props) {
+  //theme init
+  const isDarkMode = Array.from(document.body.classList).includes('theme-dark')
   //data init
   if (!markdownTableToDataGrid(props.tableString)) {
     console.log('parse markdwon table failed!')
@@ -42,8 +46,8 @@ export default function DataGrid(props: Props) {
   //console.log(column, row)
 
   //ag-grid init
-  const [columnDefs] = useState(column)
-  const [rowData] = useState(row)
+  const [columnDefs, setColumnDefs] = useState(column)
+  const [rowData, setRowData] = useState(row)
 
   const defaultColDef = useMemo(
     () => ({
@@ -76,31 +80,54 @@ export default function DataGrid(props: Props) {
       })
     })
 
-    function handleAddRowBelow() {
+    async function handleAddRowBelow() {
+      const fileContent = await props.app.vault.cachedRead(
+        props.app.workspace.getActiveFile()
+      )
+      const tableReg = new RegExp(
+        `(?<=tableId:\\s${props.tableId}\\s)[\\w\\W]*(?=\\W+\`\`\`)`
+      )
+      const oldTableString = fileContent.match(tableReg)[0]
+      const { column: columnDefs, row: rowData } = markdownTableToDataGrid(
+        oldTableString
+      ) as DataGridTable
+
       const newRowList = columnDefs.map((el: { [key: string]: string }) => {
         return {
           [el.field]: '',
         }
       })
-
+      console.log('addrow:', columnDefs, rowData)
       const newRow = Object.assign({}, ...newRowList)
       const rowIndex = localStorage.getItem('agTableRowIndex')
       rowData.splice(parseInt(rowIndex) + 1, 0, newRow)
       const tableString = dataGridToMarkdownTable({
-        column: column,
+        column: columnDefs,
         row: rowData,
       })
       replaceTable(props.app, props.tableId, tableString)
       setVisible({ visible: false })
     }
 
-    function handleDeleteThisRow() {
+    async function handleDeleteThisRow() {
+      const fileContent = await props.app.vault.cachedRead(
+        props.app.workspace.getActiveFile()
+      )
+      const tableReg = new RegExp(
+        `(?<=tableId:\\s${props.tableId}\\s)[\\w\\W]*(?=\\W+\`\`\`)`
+      )
+      const oldTableString = fileContent.match(tableReg)[0]
+      const { column: columnDefs, row: rowData } = markdownTableToDataGrid(
+        oldTableString
+      ) as DataGridTable
       const rowIndex = localStorage.getItem('agTableRowIndex')
       rowData.splice(parseInt(rowIndex), 1)
       const tableString = dataGridToMarkdownTable({
-        column: column,
+        column: columnDefs,
         row: rowData,
       })
+
+      setRowData(rowData)
       replaceTable(props.app, props.tableId, tableString)
       setVisible({ visible: false })
     }
@@ -138,27 +165,43 @@ export default function DataGrid(props: Props) {
   //cell edit setting
   function onCellEditingStopped(event: CellEditingStoppedEvent) {
     console.log(event)
+    const newData = event.data
+    const rowIndex = event.rowIndex
+
+    let newRow = rowData.map((el, index) => {
+      if (index === rowIndex) {
+        return newData
+      } else {
+        return el
+      }
+    })
+
+    const tableString = dataGridToMarkdownTable({
+      column: column,
+      row: newRow,
+    })
+    replaceTable(props.app, props.tableId, tableString)
   }
 
   //column drag
   function onColumnMoved(event: ColumnMovedEvent) {
-    console.log(event.api)
+    //console.log(event.api)
     const colId = event.column.getColId()
     const toIndex = event.toIndex
-    console.log('start drag', colId, toIndex)
+    //console.log('start drag', colId, toIndex)
     const newColumn = column.filter((el: ColDef) => {
       return el.field != colId
     })
 
     newColumn.splice(toIndex, 0, { field: colId })
-    console.log(newColumn)
+    //console.log(newColumn)
 
-    console.log('process row:', rowData)
+    //console.log('process row:', rowData)
     const newRow: Array<{ [key: string]: string }> = []
-    console.log(rowData)
+    //console.log(rowData)
     rowData.map((rowItem: { [index: string]: string }) => {
       const rowList = Object.entries(rowItem)
-      console.log('rowList:', rowList)
+      //console.log('rowList:', rowList)
       let fromIndex: number
       rowList.some((el, index) => {
         if (el[0] === colId) {
@@ -166,12 +209,12 @@ export default function DataGrid(props: Props) {
           return true
         }
       })
-      console.log(fromIndex, toIndex)
+      //console.log(fromIndex, toIndex)
       if (toIndex < fromIndex) {
         const deletedItem = rowList.splice(fromIndex, 1)
-        console.log('deleteItem:', deletedItem)
+        //console.log('deleteItem:', deletedItem)
         rowList.splice(toIndex, 0, deletedItem[0])
-        console.log(rowList)
+        //console.log(rowList)
       } else {
         rowList.splice(toIndex + 1, 0, rowList[fromIndex])
         rowList.splice(fromIndex, 1)
@@ -182,20 +225,23 @@ export default function DataGrid(props: Props) {
         }
       })
       const row = Object.assign({}, ...rowObj)
-      console.log('row:', row)
+      //console.log('row:', row)
       newRow.push(row)
-      console.log(newRow)
+      //console.log(newRow)
     })
 
     const tableString = dataGridToMarkdownTable({
       column: newColumn,
       row: newRow,
     })
+
     localStorage.setItem('agTabelMovedString', tableString)
+    setColumnDefs(newColumn)
+    setRowData(newRow)
   }
 
   function onDragStopped(event: DragStoppedEvent) {
-    //console.log('darg end:', event)
+    console.log('drogColumn:', columnDefs, rowData)
     const tableString = localStorage.getItem('agTabelMovedString')
     replaceTable(props.app, props.tableId, tableString)
   }
@@ -203,12 +249,43 @@ export default function DataGrid(props: Props) {
   //row drag
   function onRowDragEnd(event: RowDragEvent) {
     console.log(event)
+    const toRowData = event.node.data
+    let newRow = rowData
+    const toIndex = event.overIndex
+
+    let fromIndex: number
+    newRow.some((el, index) => {
+      console.log(el, toRowData)
+      if (isObjShallowEqual(el, toRowData)) {
+        fromIndex = index
+        return true
+      }
+    })
+    if (fromIndex === undefined) {
+      throw new Error('not found fromIndex!')
+    }
+
+    if (toIndex < fromIndex) {
+      const deletedItem = newRow.splice(fromIndex, 1)
+      newRow.splice(toIndex, 0, deletedItem[0])
+    } else {
+      newRow.splice(toIndex + 1, 0, newRow[fromIndex])
+      newRow.splice(fromIndex, 1)
+    }
+
+    const tableString = dataGridToMarkdownTable({
+      column: column,
+      row: newRow,
+    })
+
+    setRowData(newRow)
+    localStorage.setItem('agTabelMovedString', tableString)
   }
 
   return (
     <div
       id="table-body"
-      className="ag-theme-alpine-dark"
+      className={isDarkMode ? 'ag-theme-alpine-dark' : 'ag-theme-alpine'}
       style={{ height: '100%', width: '100%' }}
     >
       <AgGridReact
