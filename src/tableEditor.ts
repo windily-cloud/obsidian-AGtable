@@ -169,7 +169,7 @@ export default class TableEditor {
       newRow.push(row)
     })
 
-    this.replaceMdFileTable({ column: newColumn, row: newRow })
+    //this.replaceMdFileTable({ column: newColumn, row: newRow })
 
     return { column: newColumn, row: newRow }
   }
@@ -226,12 +226,12 @@ export default class TableEditor {
 
     this.replaceMdFileTable({
       column: column,
-      row: newRow,
+      row: row,
     })
 
     return {
       column: column,
-      row: newRow,
+      row: row,
     }
   }
 

@@ -1,17 +1,10 @@
-import { App, editorViewField } from 'obsidian'
+import { App } from 'obsidian'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { AgGridReact } from 'ag-grid-react'
 import 'ag-grid-community/dist/styles/ag-grid.css'
 import 'ag-grid-community/dist/styles/ag-theme-alpine-dark.css'
 import 'ag-grid-community/dist/styles/ag-theme-alpine.css'
-import {
-  dataGridToMarkdownTable,
-  isObjShallowEqual,
-  markdownTableToDataGrid,
-  replaceTable,
-} from '../utils'
 import CustomFilter from '../components/CustomFilter'
-import ReactDOM from 'react-dom'
 import t from '../i18n'
 import {
   CellEditingStoppedEvent,
@@ -21,6 +14,7 @@ import {
   RowDragEvent,
 } from 'ag-grid-community'
 import TableEditor from 'tableEditor'
+import ReactDOM from 'react-dom'
 
 interface Props {
   app: App
@@ -28,35 +22,68 @@ interface Props {
   tableString: string
 }
 
+interface State {
+  columnDefs: ColDef[]
+  rowData: Array<{ [key: string]: string }>
+  showMenu: boolean
+}
+
 interface DataGridTable {
   column: ColDef[]
   row: Array<{ [index: string]: string }>
 }
 
-export default function DataGrid(props: Props) {
-  //theme init
-  const isDarkMode = Array.from(document.body.classList).includes('theme-dark')
+if (!document.getElementById('table-menu-container')) {
+  const menuDiv = document.createElement('div')
+  menuDiv.id = 'table-menu-container'
+  document.body.appendChild(menuDiv)
+}
+const modalRoot = document.getElementById('table-menu-container')
 
-  //editor init
-  const tableEditor = new TableEditor(props.app, props.tableId)
-  //data init
-  if (!markdownTableToDataGrid(props.tableString)) {
-    console.log('parse markdwon table failed!')
+interface MenuProps {
+  showMenu: boolean
+}
+class Modal extends React.Component<MenuProps> {
+  el: HTMLElement
+  constructor(props: MenuProps) {
+    super(props)
+    this.el = document.createElement('div')
   }
-  const { column, row } = markdownTableToDataGrid(
-    props.tableString
-  ) as DataGridTable
 
-  //console.log(column, row)
+  componentDidMount() {
+    modalRoot.appendChild(this.el)
+  }
 
-  //ag-grid init
-  const [columnDefs, setColumnDefs] = useState(column)
-  const [rowData, setRowData] = useState(row)
+  componentWillUnmount() {
+    modalRoot.removeChild(this.el)
+  }
 
-  const defaultColDef = useMemo(
-    () => ({
+  render() {
+    if (this.props.showMenu) {
+      return ReactDOM.createPortal(this.props.children, this.el)
+    } else {
+      return <></>
+    }
+  }
+}
+
+export default class DataGrid extends React.Component<Props, State> {
+  app: App
+  tableEditor: TableEditor
+  defaultColDef: { [key: string]: any }
+  clickedRowIndex: string | null
+  constructor(props: Props) {
+    super(props)
+    this.app = props.app
+    this.tableEditor = new TableEditor(this.app, props.tableId)
+
+    //init data grid
+    const { column, row } = this.tableEditor.markdownTableToDataGrid(
+      props.tableString
+    ) as DataGridTable
+
+    this.defaultColDef = {
       resizable: true,
-      // sortable: true,
       flex: 1,
       editable: true,
       filter: CustomFilter,
@@ -64,159 +91,150 @@ export default function DataGrid(props: Props) {
         app: props.app,
         tableId: props.tableId,
       },
-    }),
-    [props.tableId]
-  )
-
-  //table menu
-  const [visible, setVisible] = useState(false)
-  const [rowChangeIndex, setRowChangeIndex] = useState(undefined)
-
-  function TableMenu() {
-    const menuRef = useRef(null)
-    console.log('variable in table menu:', rowData)
-    useEffect(() => {
-      document.addEventListener('click', () => {
-        if (visible) {
-          document.addEventListener('click', () => {
-            menuRef.current.style.display = 'none'
-          })
-          setVisible(false)
-        }
-      })
-    })
-
-    function handleAddRowBelow() {
-      console.log('onAddRow start:', columnDefs, rowData)
-      const { row: newRow } = tableEditor.addRowBelow(
-        {
-          column: columnDefs,
-          row: rowData,
-        },
-        rowChangeIndex
-      )
-      setRowData(newRow)
-      setVisible(false)
     }
 
-    function handleDeleteThisRow() {
-      const rowIndex = localStorage.getItem('agTableRowIndex')
-      console.log('read rowIndex', rowIndex)
-      if (rowIndex === undefined) {
-        return
-      }
-      const { row: newRow } = tableEditor.deleteThisRow(
-        {
-          column: columnDefs,
-          row: rowData,
-        },
-        rowIndex
-      )
+    //init temp variable
+    this.clickedRowIndex = null
 
-      setRowData(newRow)
-      setVisible(false)
+    //init state
+    this.state = {
+      columnDefs: column,
+      rowData: row,
+      showMenu: false,
     }
 
-    return (
-      visible && (
-        <div id="table-menu" ref={menuRef}>
-          <div onClick={handleAddRowBelow}>{t('addRowBelow')}</div>
-          <div onClick={handleDeleteThisRow}>{t('deleteThisRow')}</div>
-        </div>
-      )
-    )
+    this.handleContextMenu = this.handleContextMenu.bind(this)
+    this.handleAddRowBelow = this.handleAddRowBelow.bind(this)
+    this.handleDeleteThisRow = this.handleDeleteThisRow.bind(this)
+    this.onCellEditingStopped = this.onCellEditingStopped.bind(this)
+    this.onColumnMoved = this.onColumnMoved.bind(this)
+    this.onDragStopped = this.onDragStopped.bind(this)
+    this.onRowDragEnd = this.onRowDragEnd.bind(this)
   }
 
-  function handleContextMenu(e: any) {
-    //console.log(e)
-    localStorage.setItem('agTableRowIndex', e.rowIndex)
-    localStorage.setItem('agTableChangeRow', JSON.stringify(rowData))
-    console.log('set rowIndex:', e.rowIndex)
-    let rightclick = document.getElementById('table-menu')
-    let clientx = e.event.pageX
-    let clienty = e.event.pageY
-    rightclick.style.display = 'flex'
+  private isDarkMode(): boolean {
+    return Array.from(document.body.classList).includes('theme-dark')
+  }
+
+  handleContextMenu(params: any) {
+    console.log(params.rowIndex)
+
+    this.clickedRowIndex = params.rowIndex
+    this.setState({ showMenu: true })
+
+    console.log(this.state.showMenu)
+    let rightclick = document.getElementById('table-menu-container')
+    let clientx = params.event.pageX
+    let clienty = params.event.pageY
     rightclick.style.left = clientx + 'px'
     rightclick.style.top = clienty + 'px'
   }
 
-  useEffect(() => {
-    if (!document.getElementById('table-menu')) {
-      const menuDiv = document.createElement('div')
-      document.body.appendChild(menuDiv)
-      ReactDOM.render(React.createElement(TableMenu), menuDiv)
-      setVisible(true)
+  handleAddRowBelow() {
+    if (this.clickedRowIndex === null || undefined) {
+      return
     }
-  })
 
-  //cell edit setting
-  function onCellEditingStopped(event: CellEditingStoppedEvent) {
+    const { row: newRow } = this.tableEditor.addRowBelow(
+      {
+        column: this.state.columnDefs,
+        row: this.state.rowData,
+      },
+      this.clickedRowIndex
+    )
+
+    this.setState({ rowData: newRow, showMenu: false })
+  }
+
+  handleDeleteThisRow() {
+    const rowIndex = this.clickedRowIndex
+    if (rowIndex === null || undefined) {
+      return
+    }
+
+    const { row: newRow } = this.tableEditor.deleteThisRow(
+      {
+        column: this.state.columnDefs,
+        row: this.state.rowData,
+      },
+      rowIndex
+    )
+
+    this.setState({ rowData: newRow, showMenu: false })
+  }
+
+  onCellEditingStopped(event: CellEditingStoppedEvent) {
     const newData = event.data
     const rowIndex = event.rowIndex
 
-    tableEditor.changeCellValue(
-      { column: columnDefs, row: rowData },
+    this.tableEditor.changeCellValue(
+      { column: this.state.columnDefs, row: this.state.rowData },
       newData,
       rowIndex
     )
   }
 
-  //column drag
-  function onColumnMoved(event: ColumnMovedEvent) {
+  onColumnMoved(event: ColumnMovedEvent) {
     const colId = event.column.getColId()
     const toIndex = event.toIndex
-    const { column: newColumn, row: newRow } = tableEditor.dragColumn(
-      { column: columnDefs, row: rowData },
+    const { column: newColumn, row: newRow } = this.tableEditor.dragColumn(
+      { column: this.state.columnDefs, row: this.state.rowData },
       colId,
       toIndex
     )
-    setColumnDefs(newColumn)
-    setRowData(newRow)
+
+    this.setState({ columnDefs: newColumn, rowData: newRow })
   }
 
-  function onDragStopped() {
-    tableEditor.replaceMdFileTable({ column: columnDefs, row: rowData })
+  onDragStopped(event: DragStoppedEvent) {
+    this.tableEditor.replaceMdFileTable({ column: this.state.columnDefs, row: this.state.rowData })
   }
 
-  //row drag
-  function onRowDragEnd(event: RowDragEvent) {
-    console.log(event)
+  onRowDragEnd(event: RowDragEvent) {
     const srcRowData = event.node.data
     const toIndex = event.overIndex
 
-    const { row: newRow } = tableEditor.dragRow(
+    const { row: newRow } = this.tableEditor.dragRow(
       {
-        column: columnDefs,
-        row: rowData,
+        column: this.state.columnDefs,
+        row: this.state.rowData,
       },
       srcRowData,
       toIndex
     )
 
-    setRowData(newRow)
+    this.setState({rowData: newRow})
   }
 
-  return (
-    <div
-      id="table-body"
-      className={isDarkMode ? 'ag-theme-alpine-dark' : 'ag-theme-alpine'}
-      style={{ height: '100%', width: '100%' }}
-    >
-      <AgGridReact
-        defaultColDef={defaultColDef}
-        rowData={rowData}
-        columnDefs={columnDefs}
-        rowDragManaged={true}
-        animateRows={true}
-        rowDragEntireRow={true}
-        suppressContextMenu={true}
-        preventDefaultOnContextMenu={true}
-        onCellContextMenu={handleContextMenu}
-        onCellEditingStopped={onCellEditingStopped}
-        onRowDragEnd={onRowDragEnd}
-        onColumnMoved={onColumnMoved}
-        onDragStopped={onDragStopped}
-      ></AgGridReact>
-    </div>
-  )
+  render() {
+    return (
+      <div
+        id="table-body"
+        className={
+          this.isDarkMode() ? 'ag-theme-alpine-dark' : 'ag-theme-alpine'
+        }
+        style={{ height: '100%', width: '100%' }}
+      >
+        <AgGridReact
+          defaultColDef={this.defaultColDef}
+          rowData={this.state.rowData}
+          columnDefs={this.state.columnDefs}
+          rowDragManaged={true}
+          animateRows={true}
+          rowDragEntireRow={true}
+          suppressContextMenu={true}
+          preventDefaultOnContextMenu={true}
+          onCellContextMenu={this.handleContextMenu}
+          onCellEditingStopped={this.onCellEditingStopped}
+          onRowDragEnd={this.onRowDragEnd}
+          onColumnMoved={this.onColumnMoved}
+          onDragStopped={this.onDragStopped}
+        ></AgGridReact>
+        <Modal showMenu={this.state.showMenu}>
+          <div onClick={this.handleAddRowBelow}>{t('addRowBelow')}</div>
+          <div onClick={this.handleDeleteThisRow}>{t('deleteThisRow')}</div>
+        </Modal>
+      </div>
+    )
+  }
 }

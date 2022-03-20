@@ -14100,8 +14100,8 @@ ag-grid, ag-grid-angular, ag-grid-ng2, ag-grid-polymer, ag-grid-aurelia {
   background-color: var(--interactive-hover);
 }
 
-#table-menu {
-  display: none;
+#table-menu-container {
+  display: flex;
   flex-direction: column;
   align-items: flex-start;
   padding: 0.5em;
