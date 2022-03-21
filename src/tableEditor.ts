@@ -1,5 +1,5 @@
 import { ColDef } from 'ag-grid-community'
-import { App } from 'obsidian'
+import { App, MarkdownView, Notice } from 'obsidian'
 
 interface DataGridTable {
   column: ColDef[]
@@ -9,10 +9,22 @@ interface DataGridTable {
 export default class TableEditor {
   app: App
   tableId: string
+  tablePosition: {
+    startIndex: number
+    endIndex: number
+  }
 
-  constructor(app: App, tableId: string) {
+  constructor(
+    app: App,
+    tableId: string,
+    tablePosition: {
+      startIndex: number
+      endIndex: number
+    }
+  ) {
     this.app = app
     this.tableId = tableId
+    this.tablePosition = tablePosition
   }
 
   private isObjShallowEqual(
@@ -99,15 +111,29 @@ export default class TableEditor {
   }
 
   async replaceMdFileTable(dataGrid: DataGridTable): Promise<void> {
+    console.log('dataGrid', dataGrid)
     const tableString = this.dataGridToMarkdownTable(dataGrid)
-    const fileContent = await this.app.vault.cachedRead(
-      this.app.workspace.getActiveFile()
+    console.log(tableString)
+
+    const activeView = this.app.workspace.activeLeaf.view as MarkdownView
+    console.log(this.tablePosition)
+    const lastLineCh = activeView.editor.getLine(
+      this.tablePosition.endIndex
+    ).length
+    activeView.editor.replaceRange(
+      tableString,
+      { line: this.tablePosition.startIndex, ch: 0 },
+      { line: this.tablePosition.endIndex, ch: lastLineCh }
     )
-    const replaceReg = new RegExp(
-      `(?<=tableId:\\s${this.tableId}\\s)[\\w\\W]*(?=\\W+\`\`\`)`
-    )
-    const newFileContent = fileContent.replace(replaceReg, tableString)
-    this.app.vault.modify(this.app.workspace.getActiveFile(), newFileContent)
+    // const fileContent = await this.app.vault.cachedRead(
+    //   this.app.workspace.getActiveFile()
+    // )
+    // const replaceReg = new RegExp(
+    //   `(?<=tableId:\\s${this.tableId}\\n)(^\\|[^\n]+\\|\\n$)+(?=\\W+\`{3})`
+    // )
+    // console.log('正则匹配：', fileContent.match(replaceReg))
+    // const newFileContent = fileContent.replace(replaceReg, tableString)
+    // this.app.vault.modify(this.app.workspace.getActiveFile(), newFileContent)
   }
 
   //rowData是选中一个cell时一行的数据，rowIndex是选中该行的位置
@@ -169,7 +195,7 @@ export default class TableEditor {
       newRow.push(row)
     })
 
-    //this.replaceMdFileTable({ column: newColumn, row: newRow })
+    this.replaceMdFileTable({ column: newColumn, row: newRow })
 
     return { column: newColumn, row: newRow }
   }
@@ -235,19 +261,26 @@ export default class TableEditor {
     }
   }
 
-  deleteThisRow(dataGrid: DataGridTable, rowIndex: string): DataGridTable  {
+  deleteThisRow(dataGrid: DataGridTable, rowIndex: string): DataGridTable {
     const { column, row } = dataGrid
+    if (row.length === 1) {
+      new Notice('Do not allow delete only row!')
+      return {
+        column: column,
+        row: row,
+      }
+    } else {
+      row.splice(parseInt(rowIndex), 1)
 
-    row.splice(parseInt(rowIndex), 1)
+      this.replaceMdFileTable({
+        column: column,
+        row: row,
+      })
 
-    this.replaceMdFileTable({
-      column: column,
-      row: row,
-    })
-    
-    return {
-      column: column,
-      row: row,
+      return {
+        column: column,
+        row: row,
+      }
     }
   }
 }

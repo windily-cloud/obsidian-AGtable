@@ -31,7 +31,6 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: 0.5em;
   background-color: var(--background-primary);
   position: fixed;
   left: 0;

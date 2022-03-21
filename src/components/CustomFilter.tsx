@@ -2,11 +2,12 @@ import React, { Component, MouseEventHandler, RefObject } from 'react'
 import { ColumnEventType, IFilterParams, RowNode } from 'ag-grid-community'
 import { ColDef } from 'ag-grid-community'
 import { App } from 'obsidian'
-import { dataGridToMarkdownTable, replaceTable } from 'utils'
+import TableEditor from 'tableEditor'
 
 interface Props extends IFilterParams {
   app: App
   tableId: string
+  tableEditor: TableEditor
 }
 interface RowData {
   [key: string]: string
@@ -73,11 +74,14 @@ export default class CustomFilter extends Component<Props> {
     this.props.api.setRowData(newRow)
 
     const column = this.props.api.getColumnDefs()
-    const tableString = dataGridToMarkdownTable({
+    const tableString = this.props.tableEditor.dataGridToMarkdownTable({
       column: column,
       row: newRow,
     })
-    replaceTable(this.props.app, this.props.tableId, tableString)
+    this.props.tableEditor.replaceMdFileTable({
+      column: column,
+      row: newRow,
+    })
   }
 
   addColumn() {
@@ -91,11 +95,11 @@ export default class CustomFilter extends Component<Props> {
 
     let newColumnIndex = 0
     column.forEach((el: ColDef) => {
-      if (el.colId.startsWith('new column')) {
+      if (el.colId.startsWith('column')) {
         newColumnIndex += 1
       }
     })
-    column.splice(index + 1, 0, { field: `new column ${newColumnIndex}` })
+    column.splice(index + 1, 0, { field: `column ${newColumnIndex}` })
 
     this.props.api.setColumnDefs(column)
 
@@ -106,16 +110,15 @@ export default class CustomFilter extends Component<Props> {
           [el[0]]: el[1],
         }
       })
-      rowList.splice(index + 1, 0, { [`new column ${newColumnIndex}`]: '' })
+      rowList.splice(index + 1, 0, { [`column ${newColumnIndex}`]: '' })
       const row = Object.assign({}, ...rowList)
       newRow.push(row)
     })
 
-    const tableString = dataGridToMarkdownTable({
+    this.props.tableEditor.replaceMdFileTable({
       column: column,
       row: newRow,
     })
-    replaceTable(this.props.app, this.props.tableId, tableString)
   }
 
   deleteColumn() {
@@ -142,11 +145,11 @@ export default class CustomFilter extends Component<Props> {
       newRow.push(row)
     })
     const column = this.props.api.getColumnDefs()
-    const tableString = dataGridToMarkdownTable({
+
+    this.props.tableEditor.replaceMdFileTable({
       column: column,
       row: newRow,
     })
-    replaceTable(this.props.app, this.props.tableId, tableString)
   }
 
   render() {

@@ -1,5 +1,5 @@
 import { App } from 'obsidian'
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React from 'react'
 import { AgGridReact } from 'ag-grid-react'
 import 'ag-grid-community/dist/styles/ag-grid.css'
 import 'ag-grid-community/dist/styles/ag-theme-alpine-dark.css'
@@ -20,6 +20,10 @@ interface Props {
   app: App
   tableId: string
   tableString: string
+  tablePosition: {
+    startIndex: number
+    endIndex: number
+  }
 }
 
 interface State {
@@ -44,23 +48,12 @@ interface MenuProps {
   showMenu: boolean
 }
 class Modal extends React.Component<MenuProps> {
-  el: HTMLElement
-  constructor(props: MenuProps) {
-    super(props)
-    this.el = document.createElement('div')
-  }
-
-  componentDidMount() {
-    modalRoot.appendChild(this.el)
-  }
-
-  componentWillUnmount() {
-    modalRoot.removeChild(this.el)
-  }
-
   render() {
     if (this.props.showMenu) {
-      return ReactDOM.createPortal(this.props.children, this.el)
+      return ReactDOM.createPortal(
+        this.props.children,
+        document.getElementById('table-menu-container')
+      )
     } else {
       return <></>
     }
@@ -75,7 +68,11 @@ export default class DataGrid extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props)
     this.app = props.app
-    this.tableEditor = new TableEditor(this.app, props.tableId)
+    this.tableEditor = new TableEditor(
+      this.app,
+      props.tableId,
+      props.tablePosition
+    )
 
     //init data grid
     const { column, row } = this.tableEditor.markdownTableToDataGrid(
@@ -90,6 +87,7 @@ export default class DataGrid extends React.Component<Props, State> {
       filterParams: {
         app: props.app,
         tableId: props.tableId,
+        tableEditor: this.tableEditor,
       },
     }
 
@@ -110,6 +108,10 @@ export default class DataGrid extends React.Component<Props, State> {
     this.onColumnMoved = this.onColumnMoved.bind(this)
     this.onDragStopped = this.onDragStopped.bind(this)
     this.onRowDragEnd = this.onRowDragEnd.bind(this)
+  }
+
+  componentWillUnmount(): void {
+    modalRoot.remove()
   }
 
   private isDarkMode(): boolean {
@@ -187,7 +189,10 @@ export default class DataGrid extends React.Component<Props, State> {
   }
 
   onDragStopped(event: DragStoppedEvent) {
-    this.tableEditor.replaceMdFileTable({ column: this.state.columnDefs, row: this.state.rowData })
+    this.tableEditor.replaceMdFileTable({
+      column: this.state.columnDefs,
+      row: this.state.rowData,
+    })
   }
 
   onRowDragEnd(event: RowDragEvent) {
@@ -203,7 +208,7 @@ export default class DataGrid extends React.Component<Props, State> {
       toIndex
     )
 
-    this.setState({rowData: newRow})
+    this.setState({ rowData: newRow })
   }
 
   render() {
