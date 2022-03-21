@@ -160,8 +160,8 @@ export default class CustomFilter extends Component<Props> {
             ref={this.inputRef}
             type="text"
             placeholder={this.props.colDef.field}
+            onBlur={this.renameColumn}
           />
-          <label onClick={this.renameColumn}>confirm</label>
         </div>
         <div onClick={this.addColumn}>Add a column</div>
         <div onClick={this.deleteColumn}>Delete this column</div>
