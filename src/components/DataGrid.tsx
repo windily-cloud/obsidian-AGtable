@@ -65,6 +65,8 @@ export default class DataGrid extends React.Component<Props, State> {
   tableEditor: TableEditor
   defaultColDef: { [key: string]: any }
   clickedRowIndex: string | null
+  clickedColumn: string
+  clickedColumnIndex: number | null
   constructor(props: Props) {
     super(props)
     this.app = props.app
@@ -80,7 +82,7 @@ export default class DataGrid extends React.Component<Props, State> {
     ) as DataGridTable
 
     this.defaultColDef = {
-      resizable: true,
+      //resizable: true,
       flex: 1,
       editable: true,
       filter: CustomFilter,
@@ -93,6 +95,7 @@ export default class DataGrid extends React.Component<Props, State> {
 
     //init temp variable
     this.clickedRowIndex = null
+    this.clickedColumnIndex = null
 
     //init state
     this.state = {
@@ -108,6 +111,12 @@ export default class DataGrid extends React.Component<Props, State> {
     this.onColumnMoved = this.onColumnMoved.bind(this)
     this.onDragStopped = this.onDragStopped.bind(this)
     this.onRowDragEnd = this.onRowDragEnd.bind(this)
+  }
+
+  componentDidMount(): void {
+    document.addEventListener('click', () => {
+      this.setState({ showMenu: false })
+    })
   }
 
   componentWillUnmount(): void {
@@ -177,21 +186,23 @@ export default class DataGrid extends React.Component<Props, State> {
   }
 
   onColumnMoved(event: ColumnMovedEvent) {
-    const colId = event.column.getColId()
-    const toIndex = event.toIndex
-    const { column: newColumn, row: newRow } = this.tableEditor.dragColumn(
-      { column: this.state.columnDefs, row: this.state.rowData },
-      colId,
-      toIndex
-    )
-
-    this.setState({ columnDefs: newColumn, rowData: newRow })
+    this.clickedColumn = event.column.getColId()
+    this.clickedColumnIndex = event.toIndex
   }
 
   onDragStopped(event: DragStoppedEvent) {
+    console.log('dragStoped:', event)
+    const { column: newColumn, row: newRow } = this.tableEditor.dragColumn(
+      { column: this.state.columnDefs, row: this.state.rowData },
+      this.clickedColumn,
+      this.clickedColumnIndex
+    )
+
+    this.setState({ columnDefs: newColumn, rowData: newRow })
+
     this.tableEditor.replaceMdFileTable({
-      column: this.state.columnDefs,
-      row: this.state.rowData,
+      column: newColumn,
+      row: newRow,
     })
   }
 
@@ -231,6 +242,7 @@ export default class DataGrid extends React.Component<Props, State> {
           preventDefaultOnContextMenu={true}
           onCellContextMenu={this.handleContextMenu}
           onCellEditingStopped={this.onCellEditingStopped}
+          stopEditingWhenCellsLoseFocus={true}
           onRowDragEnd={this.onRowDragEnd}
           onColumnMoved={this.onColumnMoved}
           onDragStopped={this.onDragStopped}
