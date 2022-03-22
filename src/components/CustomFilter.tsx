@@ -159,8 +159,8 @@ export default class CustomFilter extends Component<Props> {
           <input
             ref={this.inputRef}
             type="text"
-            placeholder={this.props.colDef.field}
             onBlur={this.renameColumn}
+            defaultValue={this.props.colDef.field}
           />
         </div>
         <div onClick={this.addColumn}>Add a column</div>
