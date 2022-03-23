@@ -107,8 +107,8 @@ export default class TableEditor {
       this.app.workspace.getActiveFile()
     )
     const replaceReg = new RegExp(
-      `(?<=tableId:\\s*${this.tableId}\\n)(\\|[^\n]+\\|\\s*\\n)+\\W+(?=\`{3})`,
-      'g'
+      `(?<=tableId:\\s*${this.tableId}\\n)(\\|[^\n]+\\|\\s*\\n)+(?=\`{3})`,
+      'gi'
     )
     console.log('正则匹配：', fileContent.match(replaceReg), tableString)
     const newFileContent = fileContent.replace(replaceReg, tableString)

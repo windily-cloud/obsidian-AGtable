@@ -1,4 +1,4 @@
-import { App } from 'obsidian'
+import { App, Menu, Point } from 'obsidian'
 import React from 'react'
 import { AgGridReact } from 'ag-grid-react'
 import 'ag-grid-community/dist/styles/ag-grid.css'
@@ -15,6 +15,7 @@ import {
 } from 'ag-grid-community'
 import TableEditor from 'tableEditor'
 import ReactDOM from 'react-dom'
+import CustomHeader from './CustomHeader'
 
 interface Props {
   app: App
@@ -25,35 +26,11 @@ interface Props {
 interface State {
   columnDefs: ColDef[]
   rowData: Array<{ [key: string]: string }>
-  showMenu: boolean
 }
 
 interface DataGridTable {
   column: ColDef[]
   row: Array<{ [index: string]: string }>
-}
-
-if (!document.getElementById('table-menu-container')) {
-  const menuDiv = document.createElement('div')
-  menuDiv.id = 'table-menu-container'
-  document.body.appendChild(menuDiv)
-}
-const modalRoot = document.getElementById('table-menu-container')
-
-interface MenuProps {
-  showMenu: boolean
-}
-class Modal extends React.Component<MenuProps> {
-  render() {
-    if (this.props.showMenu) {
-      return ReactDOM.createPortal(
-        this.props.children,
-        document.getElementById('table-menu-container')
-      )
-    } else {
-      return <></>
-    }
-  }
 }
 
 export default class DataGrid extends React.Component<Props, State> {
@@ -78,8 +55,8 @@ export default class DataGrid extends React.Component<Props, State> {
       //resizable: true,
       flex: 1,
       editable: true,
-      filter: CustomFilter,
-      filterParams: {
+      headerComponent: CustomHeader,
+      headerComponentParams: {
         app: props.app,
         tableId: props.tableId,
         tableEditor: this.tableEditor,
@@ -87,7 +64,6 @@ export default class DataGrid extends React.Component<Props, State> {
     }
 
     //init temp variable
-
     this.clickedRowIndex = null
     this.clickedColumnIndex = null
     this.isColumnDrag = false
@@ -96,7 +72,6 @@ export default class DataGrid extends React.Component<Props, State> {
     this.state = {
       columnDefs: column,
       rowData: row,
-      showMenu: false,
     }
 
     this.handleContextMenu = this.handleContextMenu.bind(this)
@@ -108,32 +83,34 @@ export default class DataGrid extends React.Component<Props, State> {
     this.onRowDragEnd = this.onRowDragEnd.bind(this)
   }
 
-  componentDidMount(): void {
-    document.addEventListener('click', () => {
-      this.setState({ showMenu: false })
-    })
-  }
-
-  componentWillUnmount(): void {
-    modalRoot.remove()
-  }
-
   private isDarkMode(): boolean {
     return Array.from(document.body.classList).includes('theme-dark')
   }
 
   handleContextMenu(params: any) {
-    console.log(params.rowIndex)
+    // console.log(params.rowIndex)
 
     this.clickedRowIndex = params.rowIndex
-    this.setState({ showMenu: true })
 
-    console.log(this.state.showMenu)
-    let rightclick = document.getElementById('table-menu-container')
-    let clientx = params.event.pageX
-    let clienty = params.event.pageY
-    rightclick.style.left = clientx + 'px'
-    rightclick.style.top = clienty + 'px'
+    const menu = new Menu(this.app)
+    menu.addItem((item) =>
+      item
+        .setTitle(t('addRowBelow'))
+        .setIcon('duplicate-glyph')
+        .onClick(() => {
+          this.handleAddRowBelow()
+        })
+    )
+
+    menu.addItem((item) => {
+      item
+        .setTitle(t('deleteThisRow'))
+        .setIcon('cross-in-box')
+        .onClick(() => {
+          this.handleDeleteThisRow()
+        })
+    })
+    menu.showAtPosition(params.event as Point)
   }
 
   handleAddRowBelow() {
@@ -149,7 +126,7 @@ export default class DataGrid extends React.Component<Props, State> {
       this.clickedRowIndex
     )
 
-    this.setState({ rowData: newRow, showMenu: false })
+    this.setState({ rowData: newRow })
   }
 
   handleDeleteThisRow() {
@@ -166,7 +143,7 @@ export default class DataGrid extends React.Component<Props, State> {
       rowIndex
     )
 
-    this.setState({ rowData: newRow, showMenu: false })
+    this.setState({ rowData: newRow })
   }
 
   onCellEditingStopped(event: CellEditingStoppedEvent) {
@@ -252,10 +229,6 @@ export default class DataGrid extends React.Component<Props, State> {
           onColumnMoved={this.onColumnMoved}
           onDragStopped={this.onDragStopped}
         ></AgGridReact>
-        <Modal showMenu={this.state.showMenu}>
-          <div onClick={this.handleAddRowBelow}>{t('addRowBelow')}</div>
-          <div onClick={this.handleDeleteThisRow}>{t('deleteThisRow')}</div>
-        </Modal>
       </div>
     )
   }

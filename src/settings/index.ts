@@ -1,10 +1,10 @@
 import { generateUID } from 'utils'
 
 const tableContent = `
-|name|
-|----|
-||
+|name|tags|
+|----|----|
+|||
 `
 const tableId = generateUID()
 export const DEFAULT_TABLE =
-  '```agtable\ntableId: ' + tableId + tableContent + '\n```\n'
+  '```agtable\ntableId: ' + tableId + tableContent + '\n```'
