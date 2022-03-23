@@ -8,10 +8,6 @@ interface Props {
   app: App
   tableId: string
   tableString: string
-  tablePosition: {
-    startIndex: number
-    endIndex: number
-  }
 }
 
 export default class TableView extends React.Component<Props> {
@@ -26,7 +22,6 @@ export default class TableView extends React.Component<Props> {
           app={this.props.app}
           tableString={this.props.tableString}
           tableId={this.props.tableId}
-          tablePosition = {this.props.tablePosition}
         ></DataGrid>
       </ErrorBoundary>
     )

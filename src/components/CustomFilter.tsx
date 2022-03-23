@@ -87,6 +87,7 @@ export default class CustomFilter extends Component<Props> {
   addColumn() {
     const thisColumn = this.props.column.getColId()
     const column = this.props.api.getColumnDefs()
+
     const index = column
       .map((el: ColDef) => {
         return el.colId
@@ -100,20 +101,23 @@ export default class CustomFilter extends Component<Props> {
       }
     })
     column.splice(index + 1, 0, { field: `column ${newColumnIndex}` })
-
     this.props.api.setColumnDefs(column)
 
     const newRow: Array<{ [key: string]: string }> = []
     this.props.api.getModel().forEachNode((rowNode: RowNode) => {
       const rowList = Object.entries(rowNode.data).map((el: RowData) => {
-        return {
-          [el[0]]: el[1],
+        if (el[0] != undefined) {
+          return {
+            [el[0]]: el[1],
+          }
         }
       })
       rowList.splice(index + 1, 0, { [`column ${newColumnIndex}`]: '' })
       const row = Object.assign({}, ...rowList)
       newRow.push(row)
     })
+
+    console.log('newRow', newRow)
 
     this.props.tableEditor.replaceMdFileTable({
       column: column,

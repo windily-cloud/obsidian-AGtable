@@ -9,22 +9,10 @@ interface DataGridTable {
 export default class TableEditor {
   app: App
   tableId: string
-  tablePosition: {
-    startIndex: number
-    endIndex: number
-  }
 
-  constructor(
-    app: App,
-    tableId: string,
-    tablePosition: {
-      startIndex: number
-      endIndex: number
-    }
-  ) {
+  constructor(app: App, tableId: string) {
     this.app = app
     this.tableId = tableId
-    this.tablePosition = tablePosition
   }
 
   private isObjShallowEqual(
@@ -107,7 +95,7 @@ export default class TableEditor {
 
     let rowString = rowItem.join('\n')
 
-    return header + '\n' + marker + '\n' + rowString
+    return header + '\n' + marker + '\n' + rowString + '\n'
   }
 
   async replaceMdFileTable(dataGrid: DataGridTable): Promise<void> {
@@ -115,25 +103,16 @@ export default class TableEditor {
     const tableString = this.dataGridToMarkdownTable(dataGrid)
     console.log(tableString)
 
-    const activeView = this.app.workspace.activeLeaf.view as MarkdownView
-    console.log(this.tablePosition)
-    const lastLineCh = activeView.editor.getLine(
-      this.tablePosition.endIndex
-    ).length
-    activeView.editor.replaceRange(
-      tableString,
-      { line: this.tablePosition.startIndex, ch: 0 },
-      { line: this.tablePosition.endIndex, ch: lastLineCh }
+    const fileContent = await this.app.vault.cachedRead(
+      this.app.workspace.getActiveFile()
     )
-    // const fileContent = await this.app.vault.cachedRead(
-    //   this.app.workspace.getActiveFile()
-    // )
-    // const replaceReg = new RegExp(
-    //   `(?<=tableId:\\s${this.tableId}\\n)(^\\|[^\n]+\\|\\n$)+(?=\\W+\`{3})`
-    // )
-    // console.log('正则匹配：', fileContent.match(replaceReg))
-    // const newFileContent = fileContent.replace(replaceReg, tableString)
-    // this.app.vault.modify(this.app.workspace.getActiveFile(), newFileContent)
+    const replaceReg = new RegExp(
+      `(?<=tableId:\\s*${this.tableId}\\n)(\\|[^\n]+\\|\\s*\\n)+\\W+(?=\`{3})`,
+      'g'
+    )
+    console.log('正则匹配：', fileContent.match(replaceReg), tableString)
+    const newFileContent = fileContent.replace(replaceReg, tableString)
+    this.app.vault.modify(this.app.workspace.getActiveFile(), newFileContent)
   }
 
   //rowData是选中一个cell时一行的数据，rowIndex是选中该行的位置
@@ -186,6 +165,7 @@ export default class TableEditor {
         rowList.splice(toIndex + 1, 0, rowList[fromIndex])
         rowList.splice(fromIndex, 1)
       }
+      //console.log(rowList)
       const rowObj = rowList.map((el: string[]) => {
         return {
           [el[0]]: el[1],

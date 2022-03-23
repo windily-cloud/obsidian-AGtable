@@ -23,45 +23,48 @@ export default class AgtablePlugin extends Plugin {
         el: HTMLElement,
         context: MarkdownPostProcessorContext
       ) => {
-        const tableId = source.match(
-          /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/
-        )[0]
-        const tableString = source.replace(
-          /tableId:\W[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\W/,
-          ''
-        )
-        const tableIdLineIndex = context
+        const tableId = source.split('\n')[0].split(':')[1].trim()
+        const tableString = source
+          .split('\n')
+          .filter((el: string) => {
+            return el
+          })
+          .slice(1)
+          .join('\n')
+
+        console.log(tableId, tableString)
+        const tableIdCount = context
           .getSectionInfo(el)
           .text.split('\n')
-          .findIndex((el) => {
-            return el.includes(tableId)
-          })
-        const codebLockLength = source.split('\n').length
-        const tablePosition = {
-          startIndex: tableIdLineIndex + 1,
-          endIndex: tableIdLineIndex + codebLockLength - 1,
-        }
-        // const codeBlockList = this.app.metadataCache.getFileCache(
-        //   context.sourcePath
-        // ).sections
-        // console.log(codeBlockList)
-        // const codeBlockPosition = codeBlockList.filter((el) => {
-        //   const startPosition = el.position.start.line as number
-        //   const activeView = this.app.workspace.activeLeaf.view as MarkdownView
-        //   const tableIdLine = activeView.editor.getLine(startPosition + 1)
-        //   console.log(tableIdLine)
-        //   return el.type === 'code'
-        // })
-        //console.log(el, context, context.getSectionInfo(el))
-        //console.log(tableId, tableString)
-        if (!source && !tableId && !tableString) {
-          return
+          .filter((el) => {
+            return el.includes('tableId:') && el.split(':')[1].trim() === tableId
+          }).length
+        //console.log(tableIdCount)
+
+        if (!source || !tableId || !tableString || tableIdCount != 1) {
+          console.log(
+            `%cagtable format:\n
+          tableId: id(unique ID for same MD document)
+          |**|**|**|
+          |--|--|--|
+          |**|**|**|
+          `,
+            'color:#d96363'
+          )
+
+          const view = React.createElement(
+            'p',
+            {
+              style: { color: '#d96363' },
+            },
+            'Agtable format error! Please check out console for details!'
+          )
+          ReactDOM.render(view, el)
         } else {
           const view = React.createElement(TableView, {
             app: this.app,
             tableString,
             tableId,
-            tablePosition,
           })
           ReactDOM.render(view, el)
         }

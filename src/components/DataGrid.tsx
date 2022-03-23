@@ -20,10 +20,6 @@ interface Props {
   app: App
   tableId: string
   tableString: string
-  tablePosition: {
-    startIndex: number
-    endIndex: number
-  }
 }
 
 interface State {
@@ -67,14 +63,11 @@ export default class DataGrid extends React.Component<Props, State> {
   clickedRowIndex: string | null
   clickedColumn: string
   clickedColumnIndex: number | null
+  isColumnDrag: boolean
   constructor(props: Props) {
     super(props)
     this.app = props.app
-    this.tableEditor = new TableEditor(
-      this.app,
-      props.tableId,
-      props.tablePosition
-    )
+    this.tableEditor = new TableEditor(this.app, props.tableId)
 
     //init data grid
     const { column, row } = this.tableEditor.markdownTableToDataGrid(
@@ -94,8 +87,10 @@ export default class DataGrid extends React.Component<Props, State> {
     }
 
     //init temp variable
+
     this.clickedRowIndex = null
     this.clickedColumnIndex = null
+    this.isColumnDrag = false
 
     //init state
     this.state = {
@@ -188,29 +183,35 @@ export default class DataGrid extends React.Component<Props, State> {
   onColumnMoved(event: ColumnMovedEvent) {
     this.clickedColumn = event.column.getColId()
     this.clickedColumnIndex = event.toIndex
+    this.isColumnDrag = true
   }
 
   onDragStopped(event: DragStoppedEvent) {
     console.log('dragStoped:', event)
-    const { column: newColumn, row: newRow } = this.tableEditor.dragColumn(
-      { column: this.state.columnDefs, row: this.state.rowData },
-      this.clickedColumn,
-      this.clickedColumnIndex
-    )
+    if (this.isColumnDrag) {
+      const { column: newColumn, row: newRow } = this.tableEditor.dragColumn(
+        { column: this.state.columnDefs, row: this.state.rowData },
+        this.clickedColumn,
+        this.clickedColumnIndex
+      )
 
-    this.setState({ columnDefs: newColumn, rowData: newRow })
+      this.setState({ columnDefs: newColumn, rowData: newRow })
 
-    this.tableEditor.replaceMdFileTable({
-      column: newColumn,
-      row: newRow,
-    })
+      this.tableEditor.replaceMdFileTable({
+        column: newColumn,
+        row: newRow,
+      })
+
+      this.isColumnDrag = false
+    }
   }
 
   onRowDragEnd(event: RowDragEvent) {
     const srcRowData = event.node.data
     const toIndex = event.overIndex
 
-    const { row: newRow } = this.tableEditor.dragRow(
+    //console.log('dragRowEvent:', event, srcRowData, toIndex)
+    const { column: newColumn, row: newRow } = this.tableEditor.dragRow(
       {
         column: this.state.columnDefs,
         row: this.state.rowData,
@@ -220,6 +221,10 @@ export default class DataGrid extends React.Component<Props, State> {
     )
 
     this.setState({ rowData: newRow })
+    this.tableEditor.replaceMdFileTable({
+      column: newColumn,
+      row: newRow,
+    })
   }
 
   render() {
