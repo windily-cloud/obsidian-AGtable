@@ -99,9 +99,9 @@ export default class TableEditor {
   }
 
   async replaceMdFileTable(dataGrid: DataGridTable): Promise<void> {
-    console.log('dataGrid', dataGrid)
+    //console.log('dataGrid', dataGrid)
     const tableString = this.dataGridToMarkdownTable(dataGrid)
-    console.log(tableString)
+    //console.log(tableString)
 
     const fileContent = await this.app.vault.cachedRead(
       this.app.workspace.getActiveFile()
@@ -110,8 +110,21 @@ export default class TableEditor {
       `(?<=tableId:\\s*${this.tableId}\\n)(\\|[^\n]+\\|\\s*\\n)+(?=\`{3})`,
       'gi'
     )
-    console.log('正则匹配：', fileContent.match(replaceReg), tableString)
+    //console.log('正则匹配：', fileContent.match(replaceReg), tableString)
     const newFileContent = fileContent.replace(replaceReg, tableString)
+    this.app.vault.modify(this.app.workspace.getActiveFile(), newFileContent)
+  }
+
+  async agTableToMarkdowntable() {
+    const fileContent = await this.app.vault.cachedRead(
+      this.app.workspace.getActiveFile()
+    )
+
+    const replaceReg = new RegExp(
+      `\`\`\`agtable\\ntableId:\\s*${this.tableId}\\n((\\|[^\n]+\\|\\s*\\n)+)\`{3}`,
+      'gi'
+    )
+    const newFileContent = fileContent.replace(replaceReg, '$1')
     this.app.vault.modify(this.app.workspace.getActiveFile(), newFileContent)
   }
 

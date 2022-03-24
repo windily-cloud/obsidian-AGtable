@@ -8,4 +8,6 @@ export default {
   deleteThisColumn: '删除该列',
   addRowBelow: '在下方添加行',
   deleteThisRow: '删除该行',
+  convertToMdTable: '转换为普通表格',
+  convertToAgtable: '转换为agtable',
 }

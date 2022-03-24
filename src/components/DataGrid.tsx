@@ -112,6 +112,15 @@ export default class DataGrid extends React.Component<Props, State> {
           this.handleDeleteThisRow()
         })
     })
+
+    menu.addItem((item) => {
+      item
+        .setTitle(t('convertToMdTable'))
+        .setIcon('down-curly-arrow-glyph')
+        .onClick(() => {
+          this.tableEditor.agTableToMarkdowntable()
+        })
+    })
     menu.showAtPosition(params.event as Point)
   }
 

@@ -9,4 +9,6 @@ export default {
   deleteThisColumn: 'Delete this column',
   addRowBelow: 'Add row below',
   deleteThisRow: 'Delete this row',
+  convertToMdTable: 'convert to md table',
+  convertToAgtable: 'convert to Agtable',
 }

@@ -5,7 +5,7 @@ import TableView from 'views/TableView'
 import t from 'i18n'
 import ReactDOM from 'react-dom'
 import GenericInputPrompt from 'components/GenericInputPrompt'
-import { initTableBySize } from 'utils'
+import { generateUID, initTableBySize } from 'utils'
 export default class AgtablePlugin extends Plugin {
   async onload(): Promise<void> {
     console.log(`${t('welcome')}`)
@@ -23,6 +23,21 @@ export default class AgtablePlugin extends Plugin {
         const tableString = initTableBySize(tableSize)
         //console.log(tableString)
         editor.replaceRange(tableString, editor.getCursor())
+      },
+    })
+
+    this.addCommand({
+      id: 'convert-to-Agtable',
+      name: t('convertToAgtable'),
+      editorCallback: async (editor: Editor) => {
+        const selection = editor.getSelection()
+        if (!selection) {
+          return
+        }
+        const tableId = generateUID()
+        //console.log(selection)
+        const wrapSelection = '```agtable\n' + `tableId: ${tableId}\n` + selection + '\n```\n'
+        editor.replaceSelection(wrapSelection)
       },
     })
 
@@ -82,19 +97,6 @@ export default class AgtablePlugin extends Plugin {
         }
       }
     )
-  }
-
-  public static async inputPrompt(
-    app: App,
-    header: string,
-    placeholder?: string,
-    value?: string
-  ) {
-    try {
-      return await GenericInputPrompt.Prompt(app, header, placeholder, value)
-    } catch {
-      return undefined
-    }
   }
 
   async onunload(): Promise<void> {
