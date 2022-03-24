@@ -11,6 +11,7 @@ import {
   ColDef,
   ColumnMovedEvent,
   DragStoppedEvent,
+  GridReadyEvent,
   RowDragEvent,
 } from 'ag-grid-community'
 import TableEditor from 'tableEditor'
@@ -81,6 +82,7 @@ export default class DataGrid extends React.Component<Props, State> {
     this.onColumnMoved = this.onColumnMoved.bind(this)
     this.onDragStopped = this.onDragStopped.bind(this)
     this.onRowDragEnd = this.onRowDragEnd.bind(this)
+    this.onGridReady = this.onGridReady.bind(this)
   }
 
   private isDarkMode(): boolean {
@@ -149,12 +151,14 @@ export default class DataGrid extends React.Component<Props, State> {
   onCellEditingStopped(event: CellEditingStoppedEvent) {
     const newData = event.data
     const rowIndex = event.rowIndex
+    const colKey = event.column.getColId()
 
     this.tableEditor.changeCellValue(
       { column: this.state.columnDefs, row: this.state.rowData },
       newData,
       rowIndex
     )
+    localStorage.setItem('focusedRow', `${colKey},${rowIndex}`)
   }
 
   onColumnMoved(event: ColumnMovedEvent) {
@@ -204,6 +208,16 @@ export default class DataGrid extends React.Component<Props, State> {
     })
   }
 
+  onGridReady(event: GridReadyEvent) {
+    const focusedRow = localStorage.getItem('focusedRow')
+    if (!focusedRow) {
+      return
+    }
+    const colKey = focusedRow.split(',')[0]
+    const rowIndex = parseInt(focusedRow.split(',')[1])
+    event.api.setFocusedCell(rowIndex, colKey)
+  }
+
   render() {
     return (
       <div
@@ -228,6 +242,7 @@ export default class DataGrid extends React.Component<Props, State> {
           onRowDragEnd={this.onRowDragEnd}
           onColumnMoved={this.onColumnMoved}
           onDragStopped={this.onDragStopped}
+          onGridReady={this.onGridReady}
         ></AgGridReact>
       </div>
     )

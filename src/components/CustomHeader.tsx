@@ -71,6 +71,7 @@ export default class CustomHeader extends React.Component<Props, State> {
     console.log(event)
     event.preventDefault()
     event.stopPropagation()
+    //this.props.api.setSuppressRowDrag(true)
     this.setState({ isEditing: true })
   }
 
