@@ -36,7 +36,8 @@ export default class AgtablePlugin extends Plugin {
         }
         const tableId = generateUID()
         //console.log(selection)
-        const wrapSelection = '```agtable\n' + `tableId: ${tableId}\n` + selection + '\n```\n'
+        const wrapSelection =
+          '```agtable\n' + `tableId: ${tableId}\n` + selection + '\n```\n'
         editor.replaceSelection(wrapSelection)
       },
     })
@@ -84,7 +85,7 @@ export default class AgtablePlugin extends Plugin {
             {
               style: { color: '#d96363' },
             },
-            'Agtable format error! Please check out console for details!'
+            'Agtable format error! Please refresh or check out console for details!'
           )
           ReactDOM.render(view, el)
         } else {

@@ -70,6 +70,9 @@ export default class DataGrid extends React.Component<Props, State> {
     this.isColumnDrag = false
 
     //init state
+    const column1 = column.shift()
+    column.unshift({ rowDrag: true, ...column1 })
+    console.log(column)
     this.state = {
       columnDefs: column,
       rowData: row,
@@ -242,7 +245,7 @@ export default class DataGrid extends React.Component<Props, State> {
           columnDefs={this.state.columnDefs}
           rowDragManaged={true}
           animateRows={true}
-          rowDragEntireRow={true}
+          //rowDragEntireRow={true}
           suppressContextMenu={true}
           preventDefaultOnContextMenu={true}
           onCellContextMenu={this.handleContextMenu}
