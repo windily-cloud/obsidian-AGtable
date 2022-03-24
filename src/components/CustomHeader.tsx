@@ -11,7 +11,7 @@ interface Props extends IHeaderParams {
   tableEditor: TableEditor
 }
 
-interface State{
+interface State {
   isEditing: boolean
   newColumnName: string
 }
@@ -21,13 +21,16 @@ interface RowData {
 }
 
 export default class CustomHeader extends React.Component<Props, State> {
+  inputRef: React.RefObject<HTMLInputElement>
   constructor(props: Props) {
     super(props)
 
     this.state = {
       isEditing: false,
-      newColumnName: ""
+      newColumnName: this.props.displayName,
     }
+
+    this.inputRef = React.createRef()
 
     this.handleContextMenu = this.handleContextMenu.bind(this)
     this.handleDoubleClick = this.handleDoubleClick.bind(this)
@@ -66,25 +69,30 @@ export default class CustomHeader extends React.Component<Props, State> {
 
   handleDoubleClick(event: React.MouseEvent<HTMLDivElement>) {
     console.log(event)
-    this.setState({isEditing: true})
+    event.preventDefault()
+    event.stopPropagation()
+    this.setState({ isEditing: true })
   }
 
   handleInputChange(event: React.ChangeEvent<HTMLInputElement>) {
-    this.setState({newColumnName: event.target.value})
+    this.setState({ newColumnName: event.target.value })
   }
 
   handleInputExit(event: React.KeyboardEvent<HTMLInputElement>) {
     if (event.key === 'Enter' || event.key === 'Escape') {
-      this.renameColumn(this.state.newColumnName)
+      this.renameColumn()
+      this.setState({ isEditing: false })
     }
   }
 
   handleInputBlur() {
-    this.renameColumn(this.state.newColumnName)
+    this.renameColumn()
+    this.setState({ isEditing: false })
   }
 
-  renameColumn(newName: string) {
+  renameColumn() {
     const thisColumn = this.props.column.getColId()
+    const newName = this.state.newColumnName
     const columns = this.props.api.getColumnDefs()
     //console.log(thisColumn, columns)
     const newColumns = columns.map((el: ColDef) => {
@@ -116,16 +124,16 @@ export default class CustomHeader extends React.Component<Props, State> {
       const row = Object.assign({}, ...rowList)
       newRow.push(row)
     })
-    console.log(newRow)
+    //console.log(newRow)
     this.props.api.setRowData(newRow)
 
-    const column = this.props.api.getColumnDefs()
-    const tableString = this.props.tableEditor.dataGridToMarkdownTable({
-      column: column,
-      row: newRow,
-    })
+    // const column = this.props.api.getColumnDefs()
+    // const tableString = this.props.tableEditor.dataGridToMarkdownTable({
+    //   column: column,
+    //   row: newRow,
+    // })
     this.props.tableEditor.replaceMdFileTable({
-      column: column,
+      column: newColumns,
       row: newRow,
     })
   }
@@ -142,11 +150,11 @@ export default class CustomHeader extends React.Component<Props, State> {
 
     let newColumnIndex = 0
     column.forEach((el: ColDef) => {
-      if (el.colId.startsWith('column')) {
+      if (el.colId.startsWith('Col')) {
         newColumnIndex += 1
       }
     })
-    column.splice(index + 1, 0, { field: `column ${newColumnIndex}` })
+    column.splice(index + 1, 0, { field: `Col${newColumnIndex}` })
     this.props.api.setColumnDefs(column)
 
     const newRow: Array<{ [key: string]: string }> = []
@@ -158,7 +166,7 @@ export default class CustomHeader extends React.Component<Props, State> {
           }
         }
       })
-      rowList.splice(index + 1, 0, { [`column ${newColumnIndex}`]: '' })
+      rowList.splice(index + 1, 0, { [`Col${newColumnIndex}`]: '' })
       const row = Object.assign({}, ...rowList)
       newRow.push(row)
     })
@@ -203,8 +211,18 @@ export default class CustomHeader extends React.Component<Props, State> {
   }
 
   render() {
-
-    const label = this.state.isEditing ? <input type="text" defaultValue={this.props.displayName} onChange={this.handleInputChange} onKeyDown={this.handleInputExit} onBlur={this.handleInputBlur}/> : this.props.displayName
+    const label = this.state.isEditing ? (
+      <input
+        type="text"
+        ref={this.inputRef}
+        value={this.state.newColumnName}
+        onChange={this.handleInputChange}
+        onKeyDown={this.handleInputExit}
+        onBlur={this.handleInputBlur}
+      />
+    ) : (
+      this.props.displayName
+    )
 
     return (
       <div
