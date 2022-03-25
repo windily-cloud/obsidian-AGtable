@@ -30,9 +30,37 @@ export default class AgtablePlugin extends Plugin {
       id: 'convert-to-Agtable',
       name: t('convertToAgtable'),
       editorCallback: async (editor: Editor) => {
-        const selection = editor.getSelection()
+        let selection = editor.getSelection()
         if (!selection) {
-          return
+          // If user has not selection anything, serach for empty lines above and below the cursor position and take them as data
+          let startCursor = undefined;
+          let endCursor = undefined;
+          let { line } = editor.getCursor();
+          if (!!editor.getLine(line).trim()) {
+            let lineAbove = Math.max(line - 1, 0);
+            if (!!editor.getLine(lineAbove).trim()) {
+              while (lineAbove > 0 && !!editor.getLine(lineAbove - 1).trim()) {
+                lineAbove--;
+              }
+            } else {
+              lineAbove = line;
+            }
+        
+            let lineBelow = Math.min(line + 1, editor.lineCount() - 1);
+            if (!!editor.getLine(lineBelow).trim()) {
+              while (lineBelow + 1 < editor.lineCount() && !!editor.getLine(lineBelow + 1).trim()) {
+                lineBelow++;
+              }
+            } else {
+              lineBelow = line;
+            }
+
+            startCursor = { line: lineAbove, ch: 0 };
+            endCursor = { line: lineBelow, ch: editor.getLine(lineBelow).length };
+            editor.setSelection(startCursor, endCursor);
+            selection = editor.getRange(startCursor, endCursor);
+          }
+          
         }
         const tableId = generateUID()
         //console.log(selection)
