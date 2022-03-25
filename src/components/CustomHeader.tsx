@@ -68,7 +68,7 @@ export default class CustomHeader extends React.Component<Props, State> {
   }
 
   handleDoubleClick(event: React.MouseEvent<HTMLDivElement>) {
-    console.log(event)
+    //console.log(event)
     event.preventDefault()
     event.stopPropagation()
     //this.props.api.setSuppressRowDrag(true)
@@ -109,7 +109,7 @@ export default class CustomHeader extends React.Component<Props, State> {
 
     const newRow: Array<{ [key: string]: string }> = []
     this.props.api.getModel().forEachNode((rowNode: RowNode) => {
-      console.log(rowNode.data)
+      //console.log(rowNode.data)
       const rowList = Object.entries(rowNode.data).map((el: RowData) => {
         if (el[0] === thisColumn) {
           return {
@@ -172,7 +172,7 @@ export default class CustomHeader extends React.Component<Props, State> {
       newRow.push(row)
     })
 
-    console.log('newRow', newRow)
+    //console.log('newRow', newRow)
 
     this.props.tableEditor.replaceMdFileTable({
       column: column,

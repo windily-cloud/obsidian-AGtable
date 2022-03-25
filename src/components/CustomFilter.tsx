@@ -54,7 +54,7 @@ export default class CustomFilter extends Component<Props> {
 
     const newRow: Array<{ [key: string]: string }> = []
     this.props.api.getModel().forEachNode((rowNode: RowNode) => {
-      console.log(rowNode.data)
+      //console.log(rowNode.data)
       const rowList = Object.entries(rowNode.data).map((el: RowData) => {
         if (el[0] === thisColumn) {
           return {
@@ -70,7 +70,7 @@ export default class CustomFilter extends Component<Props> {
       const row = Object.assign({}, ...rowList)
       newRow.push(row)
     })
-    console.log(newRow)
+    //console.log(newRow)
     this.props.api.setRowData(newRow)
 
     const column = this.props.api.getColumnDefs()
@@ -117,7 +117,7 @@ export default class CustomFilter extends Component<Props> {
       newRow.push(row)
     })
 
-    console.log('newRow', newRow)
+    //console.log('newRow', newRow)
 
     this.props.tableEditor.replaceMdFileTable({
       column: column,

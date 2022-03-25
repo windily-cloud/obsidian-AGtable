@@ -1,5 +1,4 @@
 export default {
-  message: "I'm a handsome boy",
   welcome: 'loading Agtable plugin',
   createTable: 'create table',
   promptHeader: 'input table size:(row x column)',

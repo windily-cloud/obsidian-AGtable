@@ -1,5 +1,5 @@
 export default {
-  welcome: '欢迎光临',
+  welcome: '加载agtable插件....',
   createTable: '创建表格',
   promptHeader: '输入表格大小(行x列)',
   promptPlaceholder: '示例:4x3',

@@ -203,7 +203,7 @@ export default class TableEditor {
     let newRow = row
     let fromIndex: number
     newRow.some((el, index) => {
-      console.log(el, srcRow)
+      //console.log(el, srcRow)
       if (this.isObjShallowEqual(el, srcRow)) {
         fromIndex = index
         return true

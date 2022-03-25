@@ -72,7 +72,7 @@ export default class DataGrid extends React.Component<Props, State> {
     //init state
     const column1 = column.shift()
     column.unshift({ rowDrag: true, ...column1 })
-    console.log(column)
+    //console.log(column)
     this.state = {
       columnDefs: column,
       rowData: row,
@@ -180,7 +180,7 @@ export default class DataGrid extends React.Component<Props, State> {
   }
 
   onDragStopped(event: DragStoppedEvent) {
-    console.log('dragStoped:', event)
+    //console.log('dragStoped:', event)
     if (this.isColumnDrag) {
       const { column: newColumn, row: newRow } = this.tableEditor.dragColumn(
         { column: this.state.columnDefs, row: this.state.rowData },
