@@ -58,7 +58,7 @@ export default class AgtablePlugin extends Plugin {
           .slice(1)
           .join('\n')
 
-        console.log(tableId, tableString)
+        //console.log(tableId, tableString)
         const tableIdCount = context
           .getSectionInfo(el)
           .text.split('\n')
