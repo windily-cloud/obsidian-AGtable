@@ -1,7 +1,7 @@
 import React, { ChangeEvent } from 'react'
 import { useRef } from 'react'
 import { ColDef, IHeaderParams, RowNode } from 'ag-grid-community'
-import { App, Menu, Point } from 'obsidian'
+import { App, Menu, Notice, Point } from 'obsidian'
 import TableEditor from 'tableEditor'
 import t from 'i18n'
 
@@ -94,6 +94,12 @@ export default class CustomHeader extends React.Component<Props, State> {
   renameColumn() {
     const thisColumn = this.props.column.getColId()
     const newName = this.state.newColumnName
+
+    if (!newName) {
+      new Notice(t('renameError'))
+      return
+    }
+
     const columns = this.props.api.getColumnDefs()
     //console.log(thisColumn, columns)
     const newColumns = columns.map((el: ColDef) => {

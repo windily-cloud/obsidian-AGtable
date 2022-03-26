@@ -1,4 +1,11 @@
-import { Plugin, Editor, MarkdownPostProcessorContext, App } from 'obsidian'
+import {
+  Plugin,
+  Editor,
+  MarkdownPostProcessorContext,
+  App,
+  Menu,
+  MenuItem,
+} from 'obsidian'
 import { DEFAULT_TABLE } from 'settings'
 import React from 'react'
 import TableView from 'views/TableView'
@@ -30,45 +37,22 @@ export default class AgtablePlugin extends Plugin {
       id: 'convert-to-Agtable',
       name: t('convertToAgtable'),
       editorCallback: async (editor: Editor) => {
-        let selection = editor.getSelection()
-        if (!selection) {
-          // If user has not selection anything, serach for empty lines above and below the cursor position and take them as data
-          let startCursor = undefined;
-          let endCursor = undefined;
-          let { line } = editor.getCursor();
-          if (!!editor.getLine(line).trim()) {
-            let lineAbove = Math.max(line - 1, 0);
-            if (!!editor.getLine(lineAbove).trim()) {
-              while (lineAbove > 0 && !!editor.getLine(lineAbove - 1).trim()) {
-                lineAbove--;
-              }
-            } else {
-              lineAbove = line;
-            }
-        
-            let lineBelow = Math.min(line + 1, editor.lineCount() - 1);
-            if (!!editor.getLine(lineBelow).trim()) {
-              while (lineBelow + 1 < editor.lineCount() && !!editor.getLine(lineBelow + 1).trim()) {
-                lineBelow++;
-              }
-            } else {
-              lineBelow = line;
-            }
-
-            startCursor = { line: lineAbove, ch: 0 };
-            endCursor = { line: lineBelow, ch: editor.getLine(lineBelow).length };
-            editor.setSelection(startCursor, endCursor);
-            selection = editor.getRange(startCursor, endCursor);
-          }
-          
-        }
-        const tableId = generateUID()
-        //console.log(selection)
-        const wrapSelection =
-          '```agtable\n' + `tableId: ${tableId}\n` + selection + '\n```\n'
-        editor.replaceSelection(wrapSelection)
+        this.convertToAgtable(editor)
       },
     })
+
+    this.registerEvent(
+      this.app.workspace.on('editor-menu', (menu: Menu, editor: Editor) => {
+        menu.addItem((item: MenuItem) => {
+          item
+            .setTitle(t('convertToAgtable'))
+            .setIcon('down-curly-arrow-glyph')
+            .onClick((evt: MouseEvent) => {
+              this.convertToAgtable(editor)
+            })
+        })
+      })
+    )
 
     this.registerMarkdownCodeBlockProcessor(
       'agtable',
@@ -96,8 +80,9 @@ export default class AgtablePlugin extends Plugin {
             )
           }).length
         //console.log(tableIdCount)
-
-        if (!source || !tableId || !tableString || tableIdCount != 1) {
+        const isTableExist = tableIdCount === 0 || tableIdCount === 1
+        //console.log(isTableExist)
+        if (!source || !tableId || !tableString || !isTableExist) {
           console.log(
             `%cagtable format:\n
           tableId: id(unique ID for same MD document)
@@ -126,6 +111,50 @@ export default class AgtablePlugin extends Plugin {
         }
       }
     )
+  }
+
+  convertToAgtable(editor: Editor) {
+    let selection = editor.getSelection()
+    if (!selection) {
+      let startCursor = undefined
+      let endCursor = undefined
+      let { line } = editor.getCursor()
+      if (!!editor.getLine(line).trim()) {
+        let lineAbove = Math.max(line - 1, 0)
+        if (!!editor.getLine(lineAbove).trim()) {
+          while (lineAbove > 0 && !!editor.getLine(lineAbove - 1).trim()) {
+            lineAbove--
+          }
+        } else {
+          lineAbove = line
+        }
+
+        let lineBelow = Math.min(line + 1, editor.lineCount() - 1)
+        if (!!editor.getLine(lineBelow).trim()) {
+          while (
+            lineBelow + 1 < editor.lineCount() &&
+            !!editor.getLine(lineBelow + 1).trim()
+          ) {
+            lineBelow++
+          }
+        } else {
+          lineBelow = line
+        }
+
+        startCursor = { line: lineAbove, ch: 0 }
+        endCursor = {
+          line: lineBelow,
+          ch: editor.getLine(lineBelow).length,
+        }
+        editor.setSelection(startCursor, endCursor)
+        selection = editor.getRange(startCursor, endCursor)
+      }
+    }
+    const tableId = generateUID()
+    //console.log(selection)
+    const wrapSelection =
+      '```agtable\n' + `tableId: ${tableId}\n` + selection + '\n```\n'
+    editor.replaceSelection(wrapSelection)
   }
 
   async onunload(): Promise<void> {

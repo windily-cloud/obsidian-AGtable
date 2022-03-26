@@ -17,6 +17,7 @@ import {
 import TableEditor from 'tableEditor'
 import ReactDOM from 'react-dom'
 import CustomHeader from './CustomHeader'
+import CustomCellRenderer from './CustomCellRender'
 
 interface Props {
   app: App
@@ -62,6 +63,7 @@ export default class DataGrid extends React.Component<Props, State> {
         tableId: props.tableId,
         tableEditor: this.tableEditor,
       },
+      //cellRenderer: CustomCellRenderer,
     }
 
     //init temp variable

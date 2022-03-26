@@ -10,4 +10,5 @@ export default {
   deleteThisRow: '删除该行',
   convertToMdTable: '转换为普通表格',
   convertToAgtable: '转换为agtable',
+  renameError: '列名不能为空',
 }

@@ -10,4 +10,5 @@ export default {
   deleteThisRow: 'Delete this row',
   convertToMdTable: 'convert to md table',
   convertToAgtable: 'convert to Agtable',
+  renameError: 'column can not empty'
 }
