@@ -5,15 +5,17 @@ import { MarkdownRenderer } from 'obsidian'
 interface Props extends ICellRendererParams {}
 
 export default class CustomCellRenderer extends Component<Props> {
+  private cellValue: string
   cellRef: React.RefObject<HTMLSpanElement>
   constructor(props: Props) {
     super(props)
     this.cellRef = createRef()
+    this.cellValue = this.props.value.trim()
   }
 
   async componentDidMount() {
     await MarkdownRenderer.renderMarkdown(
-      this.props.value,
+      this.cellValue,
       this.cellRef.current,
       '',
       null

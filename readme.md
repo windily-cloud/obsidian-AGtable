@@ -27,7 +27,7 @@ https://user-images.githubusercontent.com/30640638/160085303-443b2a4b-3cf0-4900-
   - [x] 双击单元格修改单元格
   - [x] 自适应单元格高度
   - [x] 隐藏换行符`<br/>`
-  - [x] 右键单元格表头可以切换单行编辑和多行编辑，多行编辑可用ctrl + shift换行
+  - [x] 多行编辑可用ctrl + shift换行
   - [x] 支持在单元格内书写markdown语法，包括标题，加粗，双链(并没有反链)，latex等
 - [x] 键盘操作
   - [x] tab 键跳转到下一单元格

@@ -4,7 +4,7 @@ import { AgGridReact } from 'ag-grid-react'
 import 'ag-grid-community/dist/styles/ag-grid.css'
 import 'ag-grid-community/dist/styles/ag-theme-alpine-dark.css'
 import 'ag-grid-community/dist/styles/ag-theme-alpine.css'
-import CustomFilter from '../components/CustomFilter'
+//import CustomFilter from '../components/CustomFilter'
 import t from '../i18n'
 import {
   CellEditingStoppedEvent,
@@ -17,7 +17,6 @@ import {
   ValueSetterParams,
 } from 'ag-grid-community'
 import TableEditor from 'tableEditor'
-import ReactDOM from 'react-dom'
 import CustomHeader from './CustomHeader'
 import CustomCellRenderer from './CustomCellRender'
 
@@ -69,15 +68,21 @@ export default class DataGrid extends React.Component<Props, State> {
       },
       valueGetter: (params: ValueGetterParams) => {
         const colId = params.column.getId()
-        const currentValue = params.data[colId]
-        return currentValue.replace('<br/>', '\n')
+        let currentValue = params.data[colId]
+        while (/<br\/>/.test(currentValue)) {
+          currentValue = currentValue.replace('<br/>', '\n')
+        }
+        return currentValue
       },
       valueSetter: (params: ValueSetterParams) => {
         const colId = params.column.getId()
-        const currentValue = params.data[colId]
-        return currentValue.replace('\n', '<br/>')
+        let currentValue = params.data[colId]
+        while (/\n/.test(currentValue)) {
+          currentValue = currentValue.replace('<br/>', '\n')
+        }
+        return currentValue
       },
-      cellEditor: 'agTextCellEditor',
+      cellEditor: 'agLargeTextCellEditor',
       cellEditorPopup: true,
       cellRenderer: CustomCellRenderer,
     }
@@ -182,6 +187,7 @@ export default class DataGrid extends React.Component<Props, State> {
     const newData = event.data
     const rowIndex = event.rowIndex
     const colKey = event.column.getColId()
+    newData[colKey] = event.newValue.replaceAll('\n', '<br/>')
 
     this.tableEditor.changeCellValue(
       { column: this.state.columnDefs, row: this.state.rowData },
