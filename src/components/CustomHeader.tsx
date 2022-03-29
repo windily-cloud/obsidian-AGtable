@@ -14,6 +14,7 @@ interface Props extends IHeaderParams {
 interface State {
   isEditing: boolean
   newColumnName: string
+  multiInput: boolean
 }
 
 interface RowData {
@@ -28,6 +29,7 @@ export default class CustomHeader extends React.Component<Props, State> {
     this.state = {
       isEditing: false,
       newColumnName: this.props.displayName,
+      multiInput: false,
     }
 
     this.inputRef = React.createRef()
@@ -37,6 +39,7 @@ export default class CustomHeader extends React.Component<Props, State> {
     this.handleInputChange = this.handleInputChange.bind(this)
     this.handleInputExit = this.handleInputExit.bind(this)
     this.handleInputBlur = this.handleInputBlur.bind(this)
+    this.toggleEditor = this.toggleEditor.bind(this)
     this.addColumn = this.addColumn.bind(this)
     this.deleteColumn = this.deleteColumn.bind(this)
     this.renameColumn = this.renameColumn.bind(this)
@@ -62,6 +65,26 @@ export default class CustomHeader extends React.Component<Props, State> {
           this.deleteColumn()
         })
     })
+
+    if (this.state.multiInput) {
+      menu.addItem((item) => {
+        item
+          .setTitle(t('singleInput'))
+          .setIcon('expand-vertically')
+          .onClick(() => {
+            this.toggleEditor()
+          })
+      })
+    } else {
+      menu.addItem((item) => {
+        item
+          .setTitle(t('multiInput'))
+          .setIcon('expand-vertically')
+          .onClick(() => {
+            this.toggleEditor()
+          })
+      })
+    }
     const x = event.clientX
     const y = event.clientY
     menu.showAtPosition({ x, y } as Point)
@@ -91,6 +114,20 @@ export default class CustomHeader extends React.Component<Props, State> {
     this.setState({ isEditing: false })
   }
 
+  toggleEditor() {
+    const colId = this.props.column.getColId()
+    const newColumnDefs = this.props.api.getColumnDefs().map((el: ColDef) => {
+      if (el.field === colId && !this.state.multiInput) {
+        el.cellEditor = 'agLargeTextCellEditor'
+        this.setState({ multiInput: true })
+      } else if (el.field === colId && this.state.multiInput) {
+        el.cellEditor = 'agTextCellEditor'
+        this.setState({ multiInput: false })
+      }
+      return el
+    })
+    this.props.api.setColumnDefs(newColumnDefs)
+  }
   renameColumn() {
     const thisColumn = this.props.column.getColId()
     const newName = this.state.newColumnName

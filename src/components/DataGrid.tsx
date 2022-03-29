@@ -13,6 +13,8 @@ import {
   DragStoppedEvent,
   GridReadyEvent,
   RowDragEvent,
+  ValueGetterParams,
+  ValueSetterParams,
 } from 'ag-grid-community'
 import TableEditor from 'tableEditor'
 import ReactDOM from 'react-dom'
@@ -57,13 +59,27 @@ export default class DataGrid extends React.Component<Props, State> {
       //resizable: true,
       flex: 1,
       editable: true,
+      autoHeight: true,
+      wrapText: true,
       headerComponent: CustomHeader,
       headerComponentParams: {
         app: props.app,
         tableId: props.tableId,
         tableEditor: this.tableEditor,
       },
-      //cellRenderer: CustomCellRenderer,
+      valueGetter: (params: ValueGetterParams) => {
+        const colId = params.column.getId()
+        const currentValue = params.data[colId]
+        return currentValue.replace('<br/>', '\n')
+      },
+      valueSetter: (params: ValueSetterParams) => {
+        const colId = params.column.getId()
+        const currentValue = params.data[colId]
+        return currentValue.replace('\n', '<br/>')
+      },
+      cellEditor: 'agTextCellEditor',
+      cellEditorPopup: true,
+      cellRenderer: CustomCellRenderer,
     }
 
     //init temp variable
@@ -74,7 +90,7 @@ export default class DataGrid extends React.Component<Props, State> {
     //init state
     const column1 = column.shift()
     column.unshift({ rowDrag: true, ...column1 })
-    //console.log(column)
+
     this.state = {
       columnDefs: column,
       rowData: row,

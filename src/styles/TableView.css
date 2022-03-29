@@ -7,3 +7,8 @@
   /* height: 100%;
   padding-top: 5%; */
 }
+
+.ag-theme-alpine-dark .ag-cell,
+.ag-theme-alpine-dark .ag-full-width-row .ag-cell-wrapper.ag-row-group {
+  line-height: normal;
+}

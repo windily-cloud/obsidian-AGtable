@@ -9,25 +9,15 @@ export default class CustomCellRenderer extends Component<Props> {
   constructor(props: Props) {
     super(props)
     this.cellRef = createRef()
-    MarkdownRenderer.renderMarkdown(
+  }
+
+  async componentDidMount() {
+    await MarkdownRenderer.renderMarkdown(
       this.props.value,
       this.cellRef.current,
       '',
       null
     )
-  }
-
-  formatCell(): string {
-    let result = undefined
-    if (/\[\[.*\]\]/.test(this.props.value)) {
-      result = this.props.value.replace(/\[\[(.*)\]\]/, `<a href="$1">$1</a>`)
-      return result
-    } else if (/!\[.*\]\(.*\)/.test(this.props.value)) {
-      result = this.props.value.replace(/!\[.*\]\((.*)\)/, `<img src='$1'/>`)
-    } else {
-      result = this.props.value
-    }
-    return result
   }
 
   render() {

@@ -11,4 +11,6 @@ export default {
   convertToMdTable: '转换为普通表格',
   convertToAgtable: '转换为agtable',
   renameError: '列名不能为空',
+  singleInput: '转为单行编辑',
+  multiInput: '转为多行编辑',
 }

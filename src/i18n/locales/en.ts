@@ -1,14 +1,16 @@
 export default {
-  welcome: 'loading Agtable plugin',
-  createTable: 'create table',
-  promptHeader: 'input table size:(row x column)',
+  welcome: 'Loading Agtable plugin',
+  createTable: 'Create table',
+  promptHeader: 'Input table size:(row x column)',
   promptPlaceholder: 'eg:4x3',
-  resolveTableFailed: 'resolve table failed!',
+  resolveTableFailed: 'Resolve table failed!',
   addColumn: 'Add column',
   deleteThisColumn: 'Delete this column',
   addRowBelow: 'Add row below',
   deleteThisRow: 'Delete this row',
-  convertToMdTable: 'convert to md table',
-  convertToAgtable: 'convert to Agtable',
-  renameError: 'column can not empty'
+  convertToMdTable: 'Convert to md table',
+  convertToAgtable: 'Convert to Agtable',
+  renameError: 'Column can not empty',
+  singleInput: 'Convert to singleline input',
+  multiInput: 'Convert to MultiLine input',
 }
