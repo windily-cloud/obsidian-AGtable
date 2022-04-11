@@ -83,6 +83,10 @@ export default class DataGrid extends React.Component<Props, State> {
         return currentValue
       },
       cellEditor: 'agLargeTextCellEditor',
+      cellEditorParams: {
+        maxLength: '10000',
+        height: 100,
+      },
       cellEditorPopup: true,
       cellRenderer: CustomCellRenderer,
     }
