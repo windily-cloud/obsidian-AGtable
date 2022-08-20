@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { AgGridReact } from 'ag-grid-react' // the AG Grid React Component
 import Request from 'api'
-
+import 'ag-grid-enterprise'
 import 'ag-grid-community/dist/styles/ag-grid.css'
 import 'ag-grid-community/dist/styles/ag-theme-alpine-dark.css'
 import 'ag-grid-community/dist/styles/ag-theme-alpine.css'
@@ -9,43 +9,6 @@ import { AgtableSettings } from 'main'
 
 import type { ColDef } from 'ag-grid-community'
 import { isDarkMode } from 'utils'
-import { Menu, Point } from 'obsidian'
-import t from 'i18n'
-
-function handleContextMenu(params: any) {
-  // console.log(params.rowIndex)
-
-  this.clickedRowIndex = params.rowIndex
-
-  const menu = new Menu(this.app)
-  menu.addItem((item) =>
-    item
-      .setTitle(t('addRowBelow'))
-      .setIcon('duplicate-glyph')
-      .onClick(() => {
-        this.handleAddRowBelow()
-      })
-  )
-
-  menu.addItem((item) => {
-    item
-      .setTitle(t('deleteThisRow'))
-      .setIcon('cross-in-box')
-      .onClick(() => {
-        this.handleDeleteThisRow()
-      })
-  })
-
-  menu.addItem((item) => {
-    item
-      .setTitle(t('convertToMdTable'))
-      .setIcon('down-curly-arrow-glyph')
-      .onClick(() => {
-        this.tableEditor.agTableToMarkdowntable()
-      })
-  })
-  menu.showAtPosition(params.event as Point)
-}
 
 const DataGrid = (props: { settings: AgtableSettings }) => {
   const gridRef = useRef()
@@ -100,9 +63,7 @@ const DataGrid = (props: { settings: AgtableSettings }) => {
         columnDefs={columnDefs} // Column Defs for Columns
         defaultColDef={defaultColDef} // Default Column Properties
         animateRows={true} // Optional - set to 'true' to have rows animate when sorted
-        //rowSelection="multiple" // Options - allows click selection of rows
-        preventDefaultOnContextMenu={true}
-        onCellContextMenu={handleContextMenu}
+        rowSelection="multiple" // Options - allows click selection of rows
         onGridReady={onGridReady}
       />
     </div>
