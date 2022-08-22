@@ -1,7 +1,15 @@
-import { IHeaderParams } from 'ag-grid-community'
+import { ColDef, IHeaderParams } from 'ag-grid-community'
+import Database from 'database'
 import React, { useEffect, useRef, useState } from 'react'
+import { TableData } from 'types'
 
-export default (props: IHeaderParams) => {
+interface HeaderParams extends IHeaderParams {
+  database: Database
+  tableId: string
+  setColumnDefs: React.Dispatch<React.SetStateAction<ColDef<any>[]>>
+}
+
+export default (props: HeaderParams) => {
   const refButton = useRef(null)
   const refInput = useRef(null)
   const [editable, setEditable] = useState(false)
@@ -22,13 +30,28 @@ export default (props: IHeaderParams) => {
   }
 
   const handleInputBlur = () => {
+    changeColumnName()
     setEditable(false)
   }
 
   const handleInputExit = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter' || event.key === 'Escape') {
+      changeColumnName()
       setEditable(false)
     }
+  }
+
+  const changeColumnName = () => {
+    const tableData = props.database.getTableByUID(props.tableId) as TableData
+    const newColumnDef = tableData.columnDef.map((col) => {
+      if (col.field === props.column.getColId()) {
+        col.field = columnName
+      }
+      return col
+    })
+    tableData.columnDef = newColumnDef
+    props.setColumnDefs(newColumnDef)
+    props.database.updateTable(props.tableId, tableData)
   }
 
   const label = editable ? (
@@ -53,9 +76,7 @@ export default (props: IHeaderParams) => {
 
   return (
     <div className="agtable-header" onDoubleClick={handleDoubleClick}>
-      <div className="agtable-header-label">
-        {label}
-      </div>
+      <div className="agtable-header-label">{label}</div>
       <div
         ref={refButton}
         className="agtable-header-menu"

@@ -11,8 +11,13 @@ import Database from 'database'
 import { TableData } from 'types'
 import { ColDef, GetMainMenuItemsParams, MenuItemDef } from 'ag-grid-enterprise'
 import CustomHeader from './CustomHeader'
+import { Console } from 'console'
 
-const DataGrid = (props: { settings: AgtableSettings; tableId: string, database: Database }) => {
+const DataGrid = (props: {
+  settings: AgtableSettings
+  tableId: string
+  database: Database
+}) => {
   const gridRef = useRef()
   // useEffect(() => {
   //   getTableByUID(props.tableId).then((tableData: TableData) => {
@@ -39,6 +44,11 @@ const DataGrid = (props: { settings: AgtableSettings; tableId: string, database:
       cellEditorPopup: true,
       filter: true,
       headerComponent: CustomHeader,
+      headerComponentParams: {
+        database: props.database,
+        tableId: props.tableId,
+        setColumnDefs: setColumnDefs,
+      },
       menuTabs: ['generalMenuTab', 'filterMenuTab', 'columnsMenuTab'],
     }),
     []
@@ -56,7 +66,7 @@ const DataGrid = (props: { settings: AgtableSettings; tableId: string, database:
         params.defaultItems.slice(0)
       customMenuItems.push({
         name: 'Add New Column',
-        action: async () => {
+        action: () => {
           const tableData = props.database.getTableByUID(props.tableId)
           const newColumnDefs = [
             ...tableData.columnDef,
@@ -66,17 +76,23 @@ const DataGrid = (props: { settings: AgtableSettings; tableId: string, database:
             },
           ]
           setColumnDefs(newColumnDefs)
+          tableData.columnDef = newColumnDefs
+          props.database.updateTable(props.tableId, tableData)
         },
       })
 
       customMenuItems.push({
         name: 'Delete This Column',
-        action: async () => {
-          const tableData = props.database.getTableByUID(props.tableId) as TableData
+        action: () => {
+          const tableData = props.database.getTableByUID(
+            props.tableId
+          ) as TableData
           const newColumnDefs = tableData.columnDef.filter((col) => {
             return col.field != colDef.field
           })
           setColumnDefs(newColumnDefs)
+          tableData.columnDef = newColumnDefs
+          props.database.updateTable(props.tableId, tableData)
         },
       })
 
@@ -85,8 +101,10 @@ const DataGrid = (props: { settings: AgtableSettings; tableId: string, database:
         subMenu: [
           {
             name: 'Text',
-            action: async () => {
-              const tableData = props.database.getTableByUID(props.tableId) as TableData
+            action: () => {
+              const tableData = props.database.getTableByUID(
+                props.tableId
+              ) as TableData
               let newColumnDefs = tableData.columnDef
               tableData.columnDef.some((col, index) => {
                 if (col.field === colDef.field) {
@@ -100,8 +118,10 @@ const DataGrid = (props: { settings: AgtableSettings; tableId: string, database:
           },
           {
             name: 'Url',
-            action: async () => {
-              const tableData = props.database.getTableByUID(props.tableId) as TableData
+            action: () => {
+              const tableData = props.database.getTableByUID(
+                props.tableId
+              ) as TableData
               let newColumnDefs = tableData.columnDef
               tableData.columnDef.some((col, index) => {
                 if (col.field === colDef.field) {
@@ -122,8 +142,10 @@ const DataGrid = (props: { settings: AgtableSettings; tableId: string, database:
     []
   )
 
-  const onGridReady = useCallback(async () => {
-  }, [])
+
+  
+
+  const onGridReady = useCallback(() => {}, [])
 
   return (
     <div

@@ -21,18 +21,18 @@ export default class Database {
     const uid = generateUID()
     this.db.read()
 
-    this.db.data ||= {
-      [uid]: {
-        columnDef: [{
-          field: "title"
-        }],
-        rowData: [
-          {
-            'title': ""
-          }
-        ]
-      } as TableData
-    }
+    this.db.data[uid] = {
+      columnDef: [{
+        field: "title",
+        type: "Text"
+      }],
+      rowData: [
+        {
+          'title': ""
+        }
+      ]
+    } as TableData
+    //console.log(this.db.data)
     this.db.write()
     return uid
   }
@@ -53,7 +53,7 @@ export default class Database {
     if (!this.db.data[uid]) {
       return false
     }
-    this.db[uid] = tableData
+    this.db.data[uid] = tableData
     this.db.write()
     return true
   }
