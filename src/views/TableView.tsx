@@ -7,6 +7,7 @@ import { AgtableSettings } from 'main'
 
 interface Props {
   settings: AgtableSettings
+  tableId: string
 }
 
 export default class TableView extends React.Component<Props> {
@@ -17,7 +18,7 @@ export default class TableView extends React.Component<Props> {
   render(): React.ReactNode {
     return (
       <ErrorBoundary>
-        <DataGrid settings={this.props.settings}></DataGrid>
+        <DataGrid settings={this.props.settings} tableId={this.props.tableId}></DataGrid>
       </ErrorBoundary>
     )
   }

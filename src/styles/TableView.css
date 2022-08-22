@@ -2,10 +2,45 @@
   height: 600px;
 }
 
-#table-body .ag-menu-header{
-  margin-top: -22px;
+#table-body .agtable-header {
+  display: flex;
+  justify-content: space-between;
 }
 
-#table-body .ag-menu-list{
-  margin-top: -32px;
+/* #table-body .agtable-header .agtable-header-menu {
+  display: none;
 }
+#table-body .agtable-header:hover .agtable-header-menu {
+  display: block;
+} */
+/* #table-body .ag-menu {
+  font-size: 0px;
+}
+
+#table-body .ag-menu .ag-menu-header {
+  font-size: 13px;
+}
+
+#table-body .ag-menu .ag-menu-body {
+  font-size: 13px;
+}
+
+#table-body .ag-filter-wrapper {
+  font-size: 0px;
+}
+
+#table-body .ag-filter-wrapper .ag-mini-filter {
+  font-size: 13px;
+}
+
+#table-body .ag-filter-wrapper .ag-filter-virtual-list-container {
+  font-size: 13px;
+}
+
+#table-body .ag-virtual-list-viewport {
+  font-size: 0px;
+}
+
+#table-body .ag-virtual-list-viewport .ag-virtual-list-container {
+  font-size: 13px;
+} */
