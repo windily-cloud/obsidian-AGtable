@@ -9,9 +9,15 @@ import { AgtableSettings } from 'main'
 import { isDarkMode } from 'utils'
 import Database from 'database'
 import { TableData } from 'types'
-import { ColDef, GetMainMenuItemsParams, MenuItemDef } from 'ag-grid-enterprise'
+import {
+  ColDef,
+  GetContextMenuItemsParams,
+  GetMainMenuItemsParams,
+  MenuItemDef,
+} from 'ag-grid-enterprise'
 import CustomHeader from './CustomHeader'
 import { Console } from 'console'
+import t from 'i18n'
 
 const DataGrid = (props: {
   settings: AgtableSettings
@@ -71,7 +77,7 @@ const DataGrid = (props: {
           const newColumnDefs = [
             ...tableData.columnDef,
             {
-              field: 'new cloumn',
+              field: 'new column',
               type: 'Text',
             },
           ]
@@ -142,8 +148,53 @@ const DataGrid = (props: {
     []
   )
 
-
-  
+  const getContextMenuItems = useCallback(
+    (params: GetContextMenuItemsParams): (string | MenuItemDef)[] => {
+      console.log(params)
+      let result: (string | MenuItemDef)[] = [
+        {
+          // custom item
+          name: t('addRowBelow'),
+          action: () => {
+            const tableData = props.database.getTableByUID(
+              props.tableId
+            ) as TableData
+            const index = params.node.rowIndex
+            const newRowData = {}
+            Object.keys(tableData.rowData[0]).forEach((key) => {
+              newRowData[key] = ''
+            })
+            tableData.rowData.splice(index + 1, 0, newRowData)
+            setRowData(tableData.rowData)
+            props.database.updateTable(props.tableId, tableData)
+          }
+        },
+        {
+          // custom item
+          name: t('deleteThisRow'),
+          action: () => {
+            const tableData = props.database.getTableByUID(
+              props.tableId
+            ) as TableData
+            const rowindex = params.node.rowIndex
+            const newRowData = tableData.rowData.filter(
+              (row: any, index: number) => {
+                return rowindex != index
+              }
+            )
+            tableData.rowData = newRowData
+            setRowData(tableData.rowData)
+            props.database.updateTable(props.tableId, tableData)
+          }
+        },
+        'copy',
+        'separator',
+        'export',
+      ]
+      return result
+    },
+    []
+  )
 
   const onGridReady = useCallback(() => {}, [])
 
@@ -162,6 +213,7 @@ const DataGrid = (props: {
         animateRows={true} // Optional - set to 'true' to have rows animate when sorted
         rowSelection="multiple" // Options - allows click selection of rows
         getMainMenuItems={getMainMenuItems}
+        getContextMenuItems={getContextMenuItems}
         onGridReady={onGridReady}
       />
     </div>
