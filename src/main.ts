@@ -10,7 +10,7 @@ import React from 'react'
 import TableView from 'views/TableView'
 import t from 'i18n'
 import ReactDOM from 'react-dom'
-import { createNewTable, getTableByUID } from 'database'
+import Database from 'database'
 
 export interface AgtableSettings {
   baseURL?: string
@@ -24,15 +24,17 @@ const DEFAULT_SETTINGS = {
 
 export default class AgtablePlugin extends Plugin {
   settings: AgtableSettings
+  database: Database
   async onload(): Promise<void> {
     console.log(`${t('welcome')}`)
     this.loadSettings()
+    this.database = new Database()
 
     this.addCommand({
       id: 'add-new-agtable',
       name: 'add new agtable',
       editorCallback: async (editor: Editor) => {
-        const uid = await createNewTable()
+        const uid = this.database.createNewTable()
         if (!uid) {
           new Notice("Exist uid, please tell developer")
         }
@@ -46,11 +48,11 @@ export default class AgtablePlugin extends Plugin {
         return
       }
       const yaml = parseYaml(source)
-      const tableData = await getTableByUID(yaml.tableId)
+      const tableData = this.database.getTableByUID(yaml.tableId)
       if (!tableData) {
         return
       }
-      const view = React.createElement(TableView, { settings: this.settings, tableId: yaml.tableId })
+      const view = React.createElement(TableView, { settings: this.settings, tableId: yaml.tableId, database: this.database })
 
       ReactDOM.render(view, el)
     })

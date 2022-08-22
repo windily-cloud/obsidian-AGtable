@@ -1,56 +1,60 @@
-import { Low, JSONFile } from 'lowdb'
+import { JSONFileSync, LowSync } from 'lowdb'
 import path from 'path'
 import { generateUID } from '../utils'
 import type { TableData, DbData } from 'types'
 
-//@ts-ignore
-const dbPath = path.join(app.vault.adapter.basePath, app.vault.configDir, "agtable-db.json")
-
-console.log(dbPath)
-
-const adapter = new JSONFile<DbData>(dbPath)
-const db = new Low(adapter)
-
-export async function createNewTable(): Promise<string | null> {
-  let uid = generateUID()
-  await db.read()
-  console.log(db.data)
-
-  if (`${uid}` in db.data) {
-    return null
+export default class Database {
+  private dbPath: string
+  private db: LowSync
+  constructor() {
+    //@ts-ignore
+    this.dbPath = path.join(app.vault.adapter.basePath, app.vault.configDir, "agtable.json")
+    this.initDatabase()
   }
 
-  //init table content
-  db.data ||= {
-    [uid]: {
-      columnDef: [{
-        field: 'Title'
-      }],
-      rowData: [
-        { 'Title': "rowData" }
-      ]
-    } as TableData
+  private initDatabase() {
+    const adapter = new JSONFileSync<DbData>(this.dbPath)
+    this.db = new LowSync(adapter)
   }
-  await db.write()
-  return uid
+
+  createNewTable(): string {
+    const uid = generateUID()
+    this.db.read()
+
+    this.db.data ||= {
+      [uid]: {
+        columnDef: [{
+          field: "title"
+        }],
+        rowData: [
+          {
+            'title': ""
+          }
+        ]
+      } as TableData
+    }
+    this.db.write()
+    return uid
+  }
+
+  getTableByUID(uid: string) {
+    this.db.read()
+    if (!this.db.data[uid]) {
+      console.log(`table ${uid} does not exist!`)
+      return
+    }
+
+    return this.db.data[uid]
+  }
+
+
+  updateTable(uid: string, tableData: TableData): boolean {
+    this.db.read()
+    if (!this.db.data[uid]) {
+      return false
+    }
+    this.db[uid] = tableData
+    this.db.write()
+    return true
+  }
 }
-
-
-export async function getTableByUID(uid: string) {
-  await db.read()
-  if (!db.data[uid]) {
-    return
-  }
-  return db.data[uid]
-}
-
-export async function updateTable(uid: string, tableData: TableData): Promise<boolean> {
-  await db.read()
-  if (!db.data[uid]) {
-    return false
-  }
-  db.data[uid] = tableData
-  await db.write()
-  return true
-}
-
