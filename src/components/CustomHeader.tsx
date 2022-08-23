@@ -43,14 +43,23 @@ export default (props: HeaderParams) => {
 
   const changeColumnName = () => {
     const tableData = props.database.getTableByUID(props.tableId) as TableData
+    const oldColumnName = props.column.getColId()
     const newColumnDef = tableData.columnDef.map((col) => {
       if (col.field === props.column.getColId()) {
         col.field = columnName
       }
       return col
     })
+    const newRowData = tableData.rowData.map((row: any) => {
+      const rowValue = row[oldColumnName]
+      delete row[oldColumnName]
+      row[columnName] = rowValue
+      return row
+    })
     tableData.columnDef = newColumnDef
+    tableData.rowData = newRowData
     props.setColumnDefs(newColumnDef)
+    props.api.setRowData(newRowData)
     props.database.updateTable(props.tableId, tableData)
   }
 

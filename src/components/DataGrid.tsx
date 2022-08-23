@@ -18,6 +18,7 @@ import {
 import CustomHeader from './CustomHeader'
 import { Console } from 'console'
 import t from 'i18n'
+import { CellEditingStoppedEvent } from 'ag-grid-community'
 
 const DataGrid = (props: {
   settings: AgtableSettings
@@ -167,7 +168,7 @@ const DataGrid = (props: {
             tableData.rowData.splice(index + 1, 0, newRowData)
             setRowData(tableData.rowData)
             props.database.updateTable(props.tableId, tableData)
-          }
+          },
         },
         {
           // custom item
@@ -185,7 +186,7 @@ const DataGrid = (props: {
             tableData.rowData = newRowData
             setRowData(tableData.rowData)
             props.database.updateTable(props.tableId, tableData)
-          }
+          },
         },
         'copy',
         'separator',
@@ -195,6 +196,22 @@ const DataGrid = (props: {
     },
     []
   )
+
+  const onCellEditingStopped = (event: CellEditingStoppedEvent) => {
+    const newValue = event.newValue
+    const rowIndex = event.rowIndex
+    const colKey = event.column.getColId()
+    const tableData = props.database.getTableByUID(props.tableId) as TableData
+
+    tableData.rowData[rowIndex][colKey] = newValue
+    //console.log(rowIndex, event, colKey, tableData)
+    const updataStatus = props.database.updateTable(props.tableId, tableData)
+    if (!updataStatus) {
+      console.log('Update table failed!')
+      console.log('colKey:', colKey)
+      console.log('tableData:', tableData)
+    }
+  }
 
   const onGridReady = useCallback(() => {}, [])
 
@@ -209,6 +226,8 @@ const DataGrid = (props: {
         rowData={rowData} // Row Data for Rows
         columnDefs={columnDefs} // Column Defs for Columns
         defaultColDef={defaultColDef} // Default Column Properties
+        onCellEditingStopped={onCellEditingStopped}
+        stopEditingWhenCellsLoseFocus={true}
         columnTypes={columnTypes}
         animateRows={true} // Optional - set to 'true' to have rows animate when sorted
         rowSelection="multiple" // Options - allows click selection of rows
