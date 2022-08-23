@@ -1,3 +1,5 @@
+import { RowData } from './../types/index';
+import { ColDef } from 'ag-grid-community';
 import { JSONFileSync, LowSync } from 'lowdb'
 import path from 'path'
 import { generateUID } from '../utils'
@@ -56,5 +58,59 @@ export default class Database {
     this.db.data[uid] = tableData
     this.db.write()
     return true
+  }
+
+  addNewColumn(uid: string): ColDef[] {
+    const tableData = this.getTableByUID(uid)
+    const newColumnDefs = [
+      ...tableData.columnDef,
+      {
+        field: 'new column',
+        type: 'Text',
+      },
+    ]
+
+    tableData.columnDef = newColumnDefs
+    this.updateTable(uid, tableData)
+    return newColumnDefs
+  }
+
+  deleteThisColumn(uid: string, selectedColField: string): TableData {
+    const tableData = this.getTableByUID(uid) as TableData
+    const newColumnDefs = tableData.columnDef.filter((col) => {
+      return col.field != selectedColField
+    })
+    const newRowData = tableData.rowData.map((row) => {
+      delete row[selectedColField]
+      return row
+    })
+
+    tableData.columnDef = newColumnDefs
+    tableData.rowData = newRowData
+    this.updateTable(uid, tableData)
+    return tableData
+  }
+
+  addRowBelow(uid: string, rowIndex: number): RowData[] {
+    const tableData = this.getTableByUID(uid) as TableData
+    const newRowData = {}
+    Object.keys(tableData.rowData[0]).forEach((key) => {
+      newRowData[key] = ''
+    })
+    tableData.rowData.splice(rowIndex + 1, 0, newRowData)
+    this.updateTable(uid, tableData)
+    return tableData.rowData
+  }
+
+  deleteThisRow(uid: string, rowIndex: number): RowData[] {
+    const tableData = this.getTableByUID(uid) as TableData
+    const newRowData = tableData.rowData.filter(
+      (row, index) => {
+        return rowIndex != index
+      }
+    )
+    tableData.rowData = newRowData
+    this.updateTable(uid, tableData)
+    return newRowData
   }
 }

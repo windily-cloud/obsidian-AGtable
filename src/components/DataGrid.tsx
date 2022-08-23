@@ -26,21 +26,8 @@ const DataGrid = (props: {
   database: Database
 }) => {
   const gridRef = useRef()
-  // useEffect(() => {
-  //   getTableByUID(props.tableId).then((tableData: TableData) => {
-  //     setColumnDefs(tableData.columnDef)
-  //     setRowData(tableData.rowData)
-  //   })
-  //   return () => {
-  //     setColumnDefs([])
-  //     setRowData(null)
-  //   }
-  // }, [])
   const tableData = props.database.getTableByUID(props.tableId)
-  console.log(tableData)
   const [rowData, setRowData] = useState(tableData.rowData)
-
-  // Each Column Definition results in one Column.
   const [columnDefs, setColumnDefs] = useState<ColDef[]>(tableData.columnDef)
 
   //DefaultColDef sets props common to all Columns
@@ -74,32 +61,20 @@ const DataGrid = (props: {
       customMenuItems.push({
         name: 'Add New Column',
         action: () => {
-          const tableData = props.database.getTableByUID(props.tableId)
-          const newColumnDefs = [
-            ...tableData.columnDef,
-            {
-              field: 'new column',
-              type: 'Text',
-            },
-          ]
+          const newColumnDefs = props.database.addNewColumn(props.tableId)
           setColumnDefs(newColumnDefs)
-          tableData.columnDef = newColumnDefs
-          props.database.updateTable(props.tableId, tableData)
         },
       })
 
       customMenuItems.push({
         name: 'Delete This Column',
         action: () => {
-          const tableData = props.database.getTableByUID(
-            props.tableId
-          ) as TableData
-          const newColumnDefs = tableData.columnDef.filter((col) => {
-            return col.field != colDef.field
-          })
-          setColumnDefs(newColumnDefs)
-          tableData.columnDef = newColumnDefs
-          props.database.updateTable(props.tableId, tableData)
+          const tableData = props.database.deleteThisColumn(
+            props.tableId,
+            colDef.field
+          )
+          setColumnDefs(tableData.columnDef)
+          setRowData(tableData.rowData)
         },
       })
 
@@ -157,35 +132,24 @@ const DataGrid = (props: {
           // custom item
           name: t('addRowBelow'),
           action: () => {
-            const tableData = props.database.getTableByUID(
-              props.tableId
-            ) as TableData
-            const index = params.node.rowIndex
-            const newRowData = {}
-            Object.keys(tableData.rowData[0]).forEach((key) => {
-              newRowData[key] = ''
-            })
-            tableData.rowData.splice(index + 1, 0, newRowData)
-            setRowData(tableData.rowData)
-            props.database.updateTable(props.tableId, tableData)
+            const rowIndex = params.node.rowIndex
+            const newRowData = props.database.addRowBelow(
+              props.tableId,
+              rowIndex
+            )
+            setRowData(newRowData)
           },
         },
         {
           // custom item
           name: t('deleteThisRow'),
           action: () => {
-            const tableData = props.database.getTableByUID(
-              props.tableId
-            ) as TableData
             const rowindex = params.node.rowIndex
-            const newRowData = tableData.rowData.filter(
-              (row: any, index: number) => {
-                return rowindex != index
-              }
+            const newRowData = props.database.deleteThisRow(
+              props.tableId,
+              rowindex
             )
-            tableData.rowData = newRowData
-            setRowData(tableData.rowData)
-            props.database.updateTable(props.tableId, tableData)
+            setRowData(newRowData)
           },
         },
         'copy',
