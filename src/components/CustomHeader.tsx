@@ -14,6 +14,7 @@ export default (props: HeaderParams) => {
   const refInput = useRef(null)
   const [editable, setEditable] = useState(false)
   const [columnName, setColumnName] = useState(props.displayName)
+  const [sortStatus, setSortStatus] = useState(props.column.getSort())
 
   const onMenuClicked = (event: React.MouseEvent<HTMLDivElement>) => {
     // event.preventDefault()
@@ -52,7 +53,55 @@ export default (props: HeaderParams) => {
     props.api.setRowData(tableData.rowData)
   }
 
-  const label = editable ? (
+  let sort = null
+  const onSortRequested = (event: any) => {
+    if (props.column.isSortNone()) {
+      props.setSort('asc', event.shiftKey)
+      setSortStatus('asc')
+    } else if (props.column.isSortAscending()) {
+      props.setSort('desc', event.shiftKey)
+      setSortStatus('desc')
+    } else if (props.column.isSortDescending()) {
+      props.setSort(null, event.shiftKey)
+      setSortStatus(null)
+    } else {
+      props.setSort(null, event.shiftKey)
+      setSortStatus(null)
+    }
+  }
+  if (props.enableSorting) {
+    if (!sortStatus) {
+      sort = (
+        <div
+          onClick={(event) => onSortRequested(event)}
+          onTouchEnd={(event) => onSortRequested(event)}
+        >
+          <i className="ag-icon ag-icon-none"></i>
+        </div>
+      )
+    } else if (sortStatus === 'asc') {
+      sort = (
+        <div
+          onClick={(event) => onSortRequested(event)}
+          onTouchEnd={(event) => onSortRequested(event)}
+        >
+          <i className="ag-icon ag-icon-asc"></i>
+        </div>
+      )
+    } else if (sortStatus === 'desc') {
+      sort = (
+        <div
+          onClick={(event) => onSortRequested(event)}
+          onTouchEnd={(event) => onSortRequested(event)}
+        >
+          <i className="ag-icon ag-icon-desc"></i>
+        </div>
+      )
+    }
+  }
+
+  let label = null
+  label = editable ? (
     <input
       type="text"
       id="agtable-input"
@@ -75,6 +124,7 @@ export default (props: HeaderParams) => {
   return (
     <div className="agtable-header" onDoubleClick={handleDoubleClick}>
       <div className="agtable-header-label">{label}</div>
+      {sort}
       <div
         ref={refButton}
         className="agtable-header-menu"

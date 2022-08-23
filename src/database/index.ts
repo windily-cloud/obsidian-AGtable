@@ -112,7 +112,7 @@ export default class Database {
     return tableData
   }
 
-  dragColumn(uid: string, colId: string, toIndex: number) {
+  dragColumn(uid: string, colId: string, toIndex: number):TableData {
     const tableData = this.getTableByUID(uid) as TableData
     let fromIndex: number
     tableData.columnDef.some((col, index) => {
@@ -135,7 +135,7 @@ export default class Database {
     }
 
     this.updateTable(uid, tableData)
-
+    return tableData
   }
 
   addRowBelow(uid: string, rowIndex: number): RowData[] {

@@ -30,7 +30,8 @@ const DataGrid = (props: {
   database: Database
 }) => {
   const gridRef = useRef()
-  const tableData = props.database.getTableByUID(props.tableId)
+  const tableData = props.database.getTableByUID(props.tableId) as TableData
+  tableData.columnDef[0]['rowDrag'] = true
   const [rowData, setRowData] = useState(tableData.rowData)
   const [columnDefs, setColumnDefs] = useState<ColDef[]>(tableData.columnDef)
 
@@ -39,9 +40,9 @@ const DataGrid = (props: {
     () => ({
       sortable: true,
       editable: true,
+      resizable: true,
       cellEditorPopup: true,
-      rowDrag: true,
-      filter: true,
+      filter: 'agTextColumnFilter',
       headerComponent: CustomHeader,
       headerComponentParams: {
         database: props.database,
@@ -183,14 +184,13 @@ const DataGrid = (props: {
   }
 
   const onColumnMoved = (event: ColumnMovedEvent) => {
-    console.log(event)
     const toIndex = event.toIndex
     const colId = event.column.getColId()
     props.database.dragColumn(props.tableId, colId, toIndex)
+    props.database.getTableByUID(props.tableId) as TableData
   }
 
   const onRowDragEnd = (event: RowDragEndEvent) => {
-    console.log(event)
     const srcRow = event.node.data
     const toIndex = event.overIndex
     props.database.dargRow(props.tableId, srcRow, toIndex)
@@ -215,8 +215,11 @@ const DataGrid = (props: {
         onColumnMoved={onColumnMoved}
         stopEditingWhenCellsLoseFocus={true}
         columnTypes={columnTypes}
+        tooltipShowDelay={6000}
+        tooltipHideDelay={1000}
         animateRows={true} // Optional - set to 'true' to have rows animate when sorted
-        rowSelection="multiple" // Options - allows click selection of rows
+        //rowSelection="multiple" // Options - allows click selection of rows
+        enableRangeSelection={true}
         getMainMenuItems={getMainMenuItems}
         getContextMenuItems={getContextMenuItems}
         onGridReady={onGridReady}
