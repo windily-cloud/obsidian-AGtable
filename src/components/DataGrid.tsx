@@ -18,7 +18,7 @@ import {
 import CustomHeader from './CustomHeader'
 import { Console } from 'console'
 import t from 'i18n'
-import { CellEditingStoppedEvent } from 'ag-grid-community'
+import { CellEditingStoppedEvent, RowDragEndEvent } from 'ag-grid-community'
 
 const DataGrid = (props: {
   settings: AgtableSettings
@@ -36,6 +36,7 @@ const DataGrid = (props: {
       sortable: true,
       editable: true,
       cellEditorPopup: true,
+      rowDrag: true,
       filter: true,
       headerComponent: CustomHeader,
       headerComponentParams: {
@@ -177,6 +178,13 @@ const DataGrid = (props: {
     }
   }
 
+  const onRowDragEnd = (event: RowDragEndEvent) => {
+    console.log(event)
+    const srcRow = event.node.data
+    const toIndex = event.overIndex
+    props.database.dargRow(props.tableId, srcRow, toIndex)
+  }
+
   const onGridReady = useCallback(() => {}, [])
 
   return (
@@ -191,6 +199,8 @@ const DataGrid = (props: {
         columnDefs={columnDefs} // Column Defs for Columns
         defaultColDef={defaultColDef} // Default Column Properties
         onCellEditingStopped={onCellEditingStopped}
+        rowDragManaged={true}
+        onRowDragEnd={onRowDragEnd}
         stopEditingWhenCellsLoseFocus={true}
         columnTypes={columnTypes}
         animateRows={true} // Optional - set to 'true' to have rows animate when sorted

@@ -134,4 +134,29 @@ export default class Database {
     this.updateTable(uid, tableData)
     return newRowData
   }
+
+  dargRow(uid: string, srcRow: RowData, toIndex: number) {
+    const tableData = this.getTableByUID(uid) as TableData
+    let fromIndex: number
+    tableData.rowData.some((row, index) => {
+      if (JSON.stringify(row) === JSON.stringify(srcRow)) {
+        fromIndex = index
+        return true
+      }
+    })
+
+    if (fromIndex === undefined) {
+      throw new Error('not found fromIndex!')
+    }
+
+    if (fromIndex > toIndex) {
+      const deletedItem = tableData.rowData.splice(fromIndex, 1)
+      tableData.rowData.splice(toIndex, 0, deletedItem[0])
+    } else if (fromIndex < toIndex) {
+      tableData.rowData.splice(toIndex + 1, 0, tableData.rowData[fromIndex])
+      tableData.rowData.splice(fromIndex, 1)
+    }
+
+    this.updateTable(uid, tableData)
+  }
 }
