@@ -91,6 +91,27 @@ export default class Database {
     return tableData
   }
 
+  changeColumnName(uid: string, selectedColName: string, newColName: string): TableData {
+    const tableData = this.getTableByUID(uid) as TableData
+    const newColumnDef = tableData.columnDef.map((col) => {
+      if (col.field === selectedColName) {
+        col.field = newColName
+      }
+      return col
+    })
+    const newRowData = tableData.rowData.map((row: any) => {
+      const rowValue = row[selectedColName]
+      delete row[selectedColName]
+      row[newColName] = rowValue
+      return row
+    })
+
+    tableData.columnDef = newColumnDef
+    tableData.rowData = newRowData
+    this.updateTable(uid, tableData)
+    return tableData
+  }
+
   addRowBelow(uid: string, rowIndex: number): RowData[] {
     const tableData = this.getTableByUID(uid) as TableData
     const newRowData = {}
