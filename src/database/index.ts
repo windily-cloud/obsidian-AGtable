@@ -112,6 +112,32 @@ export default class Database {
     return tableData
   }
 
+  dragColumn(uid: string, colId: string, toIndex: number) {
+    const tableData = this.getTableByUID(uid) as TableData
+    let fromIndex: number
+    tableData.columnDef.some((col, index) => {
+      if (col.field === colId) {
+        fromIndex = index
+        return true
+      }
+    })
+
+    if (fromIndex === undefined) {
+      throw new Error('not found fromIndex!')
+    }
+
+    if (fromIndex > toIndex) {
+      const deletedItem = tableData.columnDef.splice(fromIndex, 1)
+      tableData.columnDef.splice(toIndex, 0, deletedItem[0])
+    } else if (fromIndex < toIndex) {
+      tableData.columnDef.splice(toIndex + 1, 0, tableData.columnDef[fromIndex])
+      tableData.columnDef.splice(fromIndex, 1)
+    }
+
+    this.updateTable(uid, tableData)
+
+  }
+
   addRowBelow(uid: string, rowIndex: number): RowData[] {
     const tableData = this.getTableByUID(uid) as TableData
     const newRowData = {}

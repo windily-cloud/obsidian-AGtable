@@ -18,7 +18,11 @@ import {
 import CustomHeader from './CustomHeader'
 import { Console } from 'console'
 import t from 'i18n'
-import { CellEditingStoppedEvent, RowDragEndEvent } from 'ag-grid-community'
+import {
+  CellEditingStoppedEvent,
+  ColumnMovedEvent,
+  RowDragEndEvent,
+} from 'ag-grid-community'
 
 const DataGrid = (props: {
   settings: AgtableSettings
@@ -178,6 +182,13 @@ const DataGrid = (props: {
     }
   }
 
+  const onColumnMoved = (event: ColumnMovedEvent) => {
+    console.log(event)
+    const toIndex = event.toIndex
+    const colId = event.column.getColId()
+    props.database.dragColumn(props.tableId, colId, toIndex)
+  }
+
   const onRowDragEnd = (event: RowDragEndEvent) => {
     console.log(event)
     const srcRow = event.node.data
@@ -201,6 +212,7 @@ const DataGrid = (props: {
         onCellEditingStopped={onCellEditingStopped}
         rowDragManaged={true}
         onRowDragEnd={onRowDragEnd}
+        onColumnMoved={onColumnMoved}
         stopEditingWhenCellsLoseFocus={true}
         columnTypes={columnTypes}
         animateRows={true} // Optional - set to 'true' to have rows animate when sorted
