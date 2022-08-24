@@ -6,7 +6,7 @@ import 'ag-grid-community/dist/styles/ag-theme-alpine-dark.css'
 import 'ag-grid-community/dist/styles/ag-theme-alpine.css'
 import { AgtableSettings } from 'main'
 
-import { isDarkMode } from 'utils'
+import { csvToObject, isDarkMode } from 'utils'
 import Database from 'database'
 import { TableData } from 'types'
 import {
@@ -28,6 +28,7 @@ import {
 import URLCellRenderer from './URLCellRenderer'
 import FileCellRenderer from './FileCellRenderer'
 import TagsCellRenderer from './TagsCellRenderer'
+import GenericWideInputPrompt from './prompt/GenericWideInputPropmt'
 
 const DataGrid = (props: {
   settings: AgtableSettings
@@ -177,6 +178,32 @@ const DataGrid = (props: {
         'copyWithHeaders',
         'paste',
         'separator',
+        {
+          name: 'import',
+          action: async () => {
+            const inputValue = await GenericWideInputPrompt.Prompt(
+              app,
+              'Input csv format',
+              ''
+            )
+            const csvList = csvToObject(inputValue)
+            console.log(csvList)
+            const columnDefs = Object.keys(csvList[0]).map((key: string) => {
+              return {
+                field: key,
+                type: 'Text',
+              }
+            })
+            csvList.shift()
+            const tableData = {
+              columnDef: columnDefs,
+              rowData: csvList,
+            } as TableData
+            props.database.updateTable(props.tableId, tableData)
+            params.api.setColumnDefs(tableData.columnDef)
+            setRowData(tableData.rowData)
+          },
+        },
         'export',
       ]
       return result
