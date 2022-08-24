@@ -23,17 +23,19 @@ export default class Database {
     const uid = generateUID()
     this.db.read()
 
-    this.db.data[uid] = {
-      columnDef: [{
-        field: "title",
-        type: "Text"
-      }],
-      rowData: [
-        {
-          'title': ""
-        }
-      ]
-    } as TableData
+    this.db.data ||= {
+      [uid]: {
+        columnDef: [{
+          field: "title",
+          type: "Text"
+        }],
+        rowData: [
+          {
+            'title': ""
+          }
+        ]
+      } as TableData
+    }
     //console.log(this.db.data)
     this.db.write()
     return uid
@@ -61,11 +63,20 @@ export default class Database {
   }
 
   addNewColumn(uid: string): ColDef[] {
-    const tableData = this.getTableByUID(uid)
+    const tableData = this.getTableByUID(uid) as TableData
+    let newColumnNumber = 1
+    tableData.columnDef.forEach((col) => {
+      if (col.field.startsWith('new column')) {
+        const currentColumnNumber = parseInt(col.field.slice(10,))
+        if (currentColumnNumber >= newColumnNumber) {
+          newColumnNumber = currentColumnNumber + 1
+        }
+      }
+    })
     const newColumnDefs = [
       ...tableData.columnDef,
       {
-        field: 'new column',
+        field: `new column${newColumnNumber}`,
         type: 'Text',
       },
     ]
@@ -186,7 +197,7 @@ export default class Database {
     this.updateTable(uid, tableData)
   }
 
-  changeColumnType(uid: string, colName: ColDef, newType: string):ColDef[] {
+  changeColumnType(uid: string, colName: ColDef, newType: string): ColDef[] {
     const tableData = this.getTableByUID(uid) as TableData
     let newColumnDefs = tableData.columnDef
     tableData.columnDef.some((col, index) => {

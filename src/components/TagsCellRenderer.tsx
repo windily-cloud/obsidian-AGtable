@@ -12,9 +12,11 @@ const TagsCellRenderer = (props: ICellRendererParams) => {
         <>
           <span
             className="cm-formatting cm-formatting-hashtag cm-hashtag cm-hashtag-begin cm-meta"
-            key={`tag`}
+            key={`${tag}`}
           ></span>
-          <span className="cm-hashtag cm-hashtag-end cm-meta">{tag}</span>
+          <span className="cm-hashtag cm-hashtag-end cm-meta" key={`${tag}`}>
+            {tag}
+          </span>
         </>
       )
     })

@@ -108,6 +108,7 @@ const DataGrid = (props: {
                 colDef,
                 'Text'
               )
+              newColumnDefs[0]['rowDrag'] = true
               setColumnDefs(newColumnDefs)
             },
             checked: colDef.type === 'Text',
@@ -120,6 +121,7 @@ const DataGrid = (props: {
                 colDef,
                 'File'
               )
+              newColumnDefs[0]['rowDrag'] = true
               setColumnDefs(newColumnDefs)
             },
             checked: colDef.type === 'File',
@@ -132,6 +134,7 @@ const DataGrid = (props: {
                 colDef,
                 'Tags'
               )
+              newColumnDefs[0]['rowDrag'] = true
               setColumnDefs(newColumnDefs)
             },
             checked: colDef.type === 'Tags',
@@ -144,6 +147,7 @@ const DataGrid = (props: {
                 colDef,
                 'Url'
               )
+              newColumnDefs[0]['rowDrag'] = true
               setColumnDefs(newColumnDefs)
             },
             checked: colDef.type === 'Url',
@@ -157,7 +161,7 @@ const DataGrid = (props: {
 
   const getContextMenuItems = useCallback(
     (params: GetContextMenuItemsParams): (string | MenuItemDef)[] => {
-      console.log(params)
+      //console.log(params)
       let result: (string | MenuItemDef)[] = [
         {
           // custom item

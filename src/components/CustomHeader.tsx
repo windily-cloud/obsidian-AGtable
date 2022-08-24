@@ -1,5 +1,6 @@
 import { ColDef, IHeaderParams } from 'ag-grid-community'
 import Database from 'database'
+import { Notice } from 'obsidian'
 import React, { useEffect, useRef, useState } from 'react'
 import { TableData } from 'types'
 
@@ -44,13 +45,21 @@ export default (props: HeaderParams) => {
 
   const changeColumnName = () => {
     const selectedColName = props.column.getColId()
-    const tableData = props.database.changeColumnName(
+    const tableData = props.database.getTableByUID(props.tableId) as TableData
+    const isColumnNameExist = tableData.columnDef.some((col) => {
+      return col.field === columnName
+    })
+    if (isColumnNameExist) {
+      new Notice('Column Name cannot repeat!')
+      return
+    }
+    const newTableData = props.database.changeColumnName(
       props.tableId,
       selectedColName,
       columnName
     )
-    props.setColumnDefs(tableData.columnDef)
-    props.api.setRowData(tableData.rowData)
+    props.setColumnDefs(newTableData.columnDef)
+    props.api.setRowData(newTableData.rowData)
   }
 
   let sort = null
