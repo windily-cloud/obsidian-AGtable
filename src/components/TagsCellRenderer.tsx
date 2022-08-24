@@ -7,14 +7,17 @@ const TagsCellRenderer = (props: ICellRendererParams) => {
   if (cellValue) {
     const tags = String(props.value).split(' ')
 
-    tagsList = tags.map((tag: string) => {
+    tagsList = tags.map((tag: string, index: number) => {
       return (
         <>
           <span
             className="cm-formatting cm-formatting-hashtag cm-hashtag cm-hashtag-begin cm-meta"
             key={`${tag}`}
           ></span>
-          <span className="cm-hashtag cm-hashtag-end cm-meta" key={`${tag}`}>
+          <span
+            className="cm-hashtag cm-hashtag-end cm-meta"
+            key={`${tag}-${index}`}
+          >
             {tag}
           </span>
         </>
