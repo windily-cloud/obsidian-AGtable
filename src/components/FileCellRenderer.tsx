@@ -40,17 +40,7 @@ const FileCellRenderer = (props: ICellRendererParams) => {
     )
   } else {
     linkComponent = (
-      <span
-        className="cm-underline is-unresolved"
-        onMouseOver={(event) => {
-          handleHover(event)
-        }}
-        onClick={() => {
-          handleClickFileName()
-        }}
-      >
-        {cellValue}
-      </span>
+      <span className="cm-underline is-unresolved">{cellValue}</span>
     )
   }
 

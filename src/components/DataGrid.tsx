@@ -20,6 +20,7 @@ import t from 'i18n'
 import {
   CellEditingStoppedEvent,
   ColumnMovedEvent,
+  DragStoppedEvent,
   RowDragEndEvent,
   ValueGetterParams,
   ValueSetterParams,
@@ -208,16 +209,40 @@ const DataGrid = (props: {
     }
   }
 
+  // const onColumnMoved = (event: ColumnMovedEvent) => {
+  //   const toIndex = event.toIndex
+  //   const colId = event.column.getColId()
+  //   props.database.dragColumn(props.tableId, colId, toIndex)
+  //   const newTableData = props.database.getTableByUID(
+  //     props.tableId
+  //   ) as TableData
+  //   newTableData.columnDef[0]['rowDrag'] = true
+  //   event.api.setColumnDefs(newTableData.columnDef)
+  //   event.api.setRowData(newTableData.rowData)
+  // }
+  let clickedColumn = ''
+  let clickedColumnIndex: number = undefined
+  let isColumnDrag = false
   const onColumnMoved = (event: ColumnMovedEvent) => {
-    const toIndex = event.toIndex
-    const colId = event.column.getColId()
-    props.database.dragColumn(props.tableId, colId, toIndex)
-    const newTableData = props.database.getTableByUID(
-      props.tableId
-    ) as TableData
-    newTableData.columnDef[0]['rowDrag'] = true
-    event.api.setColumnDefs(newTableData.columnDef)
-    event.api.setRowData(newTableData.rowData)
+    clickedColumn = event.column.getColId()
+    clickedColumnIndex = event.toIndex
+    isColumnDrag = true
+  }
+
+  const onDragStopped = (event: DragStoppedEvent) => {
+    if (isColumnDrag && clickedColumn && clickedColumnIndex) {
+      props.database.dragColumn(
+        props.tableId,
+        clickedColumn,
+        clickedColumnIndex
+      )
+      const newTableData = props.database.getTableByUID(
+        props.tableId
+      ) as TableData
+      newTableData.columnDef[0]['rowDrag'] = true
+      event.api.setColumnDefs(newTableData.columnDef)
+      event.api.setRowData(newTableData.rowData)
+    }
   }
 
   const onRowDragEnd = (event: RowDragEndEvent) => {
@@ -260,6 +285,7 @@ const DataGrid = (props: {
         rowDragManaged={true}
         onRowDragEnd={onRowDragEnd}
         onColumnMoved={onColumnMoved}
+        onDragStopped={onDragStopped}
         stopEditingWhenCellsLoseFocus={true}
         columnTypes={columnTypes}
         tooltipShowDelay={6000}
