@@ -45,6 +45,9 @@ export default (props: HeaderParams) => {
 
   const changeColumnName = () => {
     const selectedColName = props.column.getColId()
+    if (!columnName) {
+      return
+    }
     const tableData = props.database.getTableByUID(props.tableId) as TableData
     const isColumnNameExist = tableData.columnDef.some((col) => {
       return col.field === columnName
