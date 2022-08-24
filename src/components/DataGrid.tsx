@@ -19,8 +19,10 @@ import CustomHeader from './CustomHeader'
 import t from 'i18n'
 import {
   CellEditingStoppedEvent,
+  CellValueChangedEvent,
   ColumnMovedEvent,
   DragStoppedEvent,
+  PasteEndEvent,
   RowDragEndEvent,
 } from 'ag-grid-community'
 import URLCellRenderer from './URLCellRenderer'
@@ -237,7 +239,7 @@ const DataGrid = (props: {
   const onRowDragEnd = (event: RowDragEndEvent) => {
     const srcRow = event.node.data
     const toIndex = event.overIndex
-    props.database.dargRow(props.tableId, srcRow, toIndex)
+    props.database.dragRow(props.tableId, srcRow, toIndex)
   }
 
   const statusBar = {
@@ -256,6 +258,24 @@ const DataGrid = (props: {
       },
     ],
   }
+
+  const onCellValueChanged = useCallback((params: CellValueChangedEvent) => {
+    if (params.source != 'paste') {
+      return
+    }
+    const rowIndex = params.rowIndex
+    const pasteData = params.data
+    const tableData = props.database.getTableByUID(props.tableId) as TableData
+    const newRowData = tableData.rowData.map((row, index) => {
+      if (index === rowIndex) {
+        return pasteData
+      } else {
+        return row
+      }
+    })
+    tableData.rowData = newRowData
+    props.database.updateTable(props.tableId, tableData)
+  }, [])
 
   const onGridReady = useCallback(() => {}, [])
 
@@ -280,6 +300,7 @@ const DataGrid = (props: {
         tooltipShowDelay={6000}
         tooltipHideDelay={1000}
         //sideBar={'columns'}
+        onCellValueChanged={onCellValueChanged}
         statusBar={statusBar}
         animateRows={true} // Optional - set to 'true' to have rows animate when sorted
         rowSelection="multiple" // Options - allows click selection of rows

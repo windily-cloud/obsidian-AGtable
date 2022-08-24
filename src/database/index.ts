@@ -178,7 +178,7 @@ export default class Database {
     return newRowData
   }
 
-  dargRow(uid: string, srcRow: RowData, toIndex: number) {
+  dragRow(uid: string, srcRow: RowData, toIndex: number) {
     const tableData = this.getTableByUID(uid) as TableData
     let fromIndex: number
     tableData.rowData.some((row, index) => {
