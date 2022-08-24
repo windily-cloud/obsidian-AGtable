@@ -21,8 +21,10 @@ import {
   CellEditingStoppedEvent,
   ColumnMovedEvent,
   RowDragEndEvent,
+  ValueGetterParams,
+  ValueSetterParams,
 } from 'ag-grid-community'
-import { cp } from 'fs'
+import URLCellRenderer from './URLCellRender'
 
 const DataGrid = (props: {
   settings: AgtableSettings
@@ -56,7 +58,10 @@ const DataGrid = (props: {
 
   const columnTypes = {
     Text: {},
-    Url: {},
+    Url: {
+      cellRenderer: URLCellRenderer,
+    },
+    WikiLink: {},
   }
 
   const getMainMenuItems = useCallback(
@@ -110,6 +115,18 @@ const DataGrid = (props: {
               setColumnDefs(newColumnDefs)
             },
             checked: colDef.type === 'Url',
+          },
+          {
+            name: 'WikiLink',
+            action: () => {
+              const newColumnDefs = props.database.changeColumnType(
+                props.tableId,
+                colDef,
+                'WikiLink'
+              )
+              setColumnDefs(newColumnDefs)
+            },
+            checked: colDef.type === 'WikiLink',
           },
         ],
       })
