@@ -150,12 +150,17 @@ export default class Database {
     return tableData
   }
 
-  addRowBelow(uid: string, rowIndex: number): RowData[] {
+  addRowBelow(uid: string, rowIndex: number | null): RowData[] {
     const tableData = this.getTableByUID(uid) as TableData
     const newRowData = {}
     Object.keys(tableData.rowData[0]).forEach((key) => {
       newRowData[key] = ''
     })
+    if (!rowIndex) {
+      tableData.rowData.push(newRowData)
+      this.updateTable(uid, tableData)
+      return tableData.rowData
+    }
     tableData.rowData.splice(rowIndex + 1, 0, newRowData)
     this.updateTable(uid, tableData)
     return tableData.rowData

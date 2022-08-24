@@ -148,7 +148,12 @@ const DataGrid = (props: {
           // custom item
           name: t('addRowBelow'),
           action: () => {
-            const rowIndex = params.node.rowIndex
+            let rowIndex: number | null
+            try {
+              rowIndex = params.node.rowIndex
+            } catch {
+              rowIndex = null
+            }
             const newRowData = props.database.addRowBelow(
               props.tableId,
               rowIndex
