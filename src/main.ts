@@ -1,4 +1,3 @@
-import { TableData } from './types/index';
 import {
   Plugin,
   MarkdownPostProcessorContext,
@@ -34,7 +33,7 @@ export default class AgtablePlugin extends Plugin {
       editorCallback: async (editor: Editor) => {
         const uid = this.database.createNewTable()
         if (!uid) {
-          new Notice("Exist uid, please tell developer")
+          new Notice("Exist uid, it's not your fault, please tell developer to fix it")
         }
         const tableString = `\`\`\`agtable\ntableId: ${uid}\n\`\`\``
         editor.replaceRange(tableString, editor.getCursor())

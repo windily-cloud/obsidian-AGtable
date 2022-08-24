@@ -22,8 +22,6 @@ import {
   ColumnMovedEvent,
   DragStoppedEvent,
   RowDragEndEvent,
-  ValueGetterParams,
-  ValueSetterParams,
 } from 'ag-grid-community'
 import URLCellRenderer from './URLCellRenderer'
 import FileCellRenderer from './FileCellRenderer'
