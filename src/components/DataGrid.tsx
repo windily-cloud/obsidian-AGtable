@@ -90,35 +90,23 @@ const DataGrid = (props: {
           {
             name: 'Text',
             action: () => {
-              const tableData = props.database.getTableByUID(
-                props.tableId
-              ) as TableData
-              let newColumnDefs = tableData.columnDef
-              tableData.columnDef.some((col, index) => {
-                if (col.field === colDef.field) {
-                  newColumnDefs[index].type = 'Text'
-                  return true
-                }
-                return false
-              })
+              const newColumnDefs = props.database.changeColumnType(
+                props.tableId,
+                colDef,
+                'Text'
+              )
+              setColumnDefs(newColumnDefs)
             },
             checked: colDef.type === 'Text',
           },
           {
             name: 'Url',
             action: () => {
-              const tableData = props.database.getTableByUID(
-                props.tableId
-              ) as TableData
-              let newColumnDefs = tableData.columnDef
-              tableData.columnDef.some((col, index) => {
-                if (col.field === colDef.field) {
-                  newColumnDefs[index].type = 'Url'
-                  return true
-                }
-                return false
-              })
-
+              const newColumnDefs = props.database.changeColumnType(
+                props.tableId,
+                colDef,
+                'Url'
+              )
               setColumnDefs(newColumnDefs)
             },
             checked: colDef.type === 'Url',
@@ -208,6 +196,14 @@ const DataGrid = (props: {
         statusPanel: 'agTotalAndFilteredRowCountComponent',
         align: 'left',
       },
+      {
+        statusPanel: 'agAggregationComponent',
+        statusPanelParams: {
+          // possible values are: 'count', 'sum', 'min', 'max', 'avg'
+          aggFuncs: ['avg', 'sum'],
+        },
+        align: 'left',
+      },
     ],
   }
 
@@ -232,6 +228,7 @@ const DataGrid = (props: {
         columnTypes={columnTypes}
         tooltipShowDelay={6000}
         tooltipHideDelay={1000}
+        //sideBar={'columns'}
         statusBar={statusBar}
         animateRows={true} // Optional - set to 'true' to have rows animate when sorted
         rowSelection="multiple" // Options - allows click selection of rows

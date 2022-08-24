@@ -112,7 +112,7 @@ export default class Database {
     return tableData
   }
 
-  dragColumn(uid: string, colId: string, toIndex: number):TableData {
+  dragColumn(uid: string, colId: string, toIndex: number): TableData {
     const tableData = this.getTableByUID(uid) as TableData
     let fromIndex: number
     tableData.columnDef.some((col, index) => {
@@ -184,5 +184,21 @@ export default class Database {
     }
 
     this.updateTable(uid, tableData)
+  }
+
+  changeColumnType(uid: string, colName: ColDef, newType: string):ColDef[] {
+    const tableData = this.getTableByUID(uid) as TableData
+    let newColumnDefs = tableData.columnDef
+    tableData.columnDef.some((col, index) => {
+      if (col.field === colName.field) {
+        newColumnDefs[index].type = newType
+        return true
+      }
+      return false
+    })
+
+    tableData.columnDef = newColumnDefs
+    this.updateTable(uid, tableData)
+    return newColumnDefs
   }
 }
