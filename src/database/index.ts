@@ -153,10 +153,14 @@ export default class Database {
   addRowBelow(uid: string, rowIndex: number | null): RowData[] {
     const tableData = this.getTableByUID(uid) as TableData
     const newRowData = {}
-    Object.keys(tableData.rowData[0]).forEach((key) => {
-      newRowData[key] = ''
+    tableData.columnDef.forEach(col => {
+      newRowData[col.field] = ''
     })
-    if (!rowIndex) {
+
+    // Object.keys(tableData.rowData[0]).forEach((key) => {
+    //   newRowData[key] = ''
+    // })
+    if (rowIndex === null) {
       tableData.rowData.push(newRowData)
       this.updateTable(uid, tableData)
       return tableData.rowData
