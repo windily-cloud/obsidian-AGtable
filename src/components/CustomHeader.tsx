@@ -152,15 +152,18 @@ export default (props: HeaderParams) => {
     )
 
     menu.addItem((item) => {
-      const colDef = props.column.getColId() as ColDef
       item
         .setTitle(t('deleteThisColumn'))
         .setIcon('trash')
         .onClick(() => {
+          const colId = props.column.getColId()
+          console.log(colId)
           const tableData = props.database.deleteThisColumn(
             props.tableId,
-            colDef.field
+            colId
           )
+          props.setColumnDefs(tableData.columnDef)
+          props.api.setRowData(tableData.rowData)
         })
     })
 

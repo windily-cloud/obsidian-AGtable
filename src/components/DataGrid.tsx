@@ -77,27 +77,8 @@ const DataGrid = (props: {
       const colDef = params.column.getColDef()
       const customMenuItems: (MenuItemDef | string)[] =
         params.defaultItems.slice(0)
-      customMenuItems.push({
-        name: 'Add New Column',
-        action: () => {
-          const newColumnDefs = props.database.addNewColumn(props.tableId)
-          setColumnDefs(newColumnDefs)
-        },
-      })
 
-      customMenuItems.push({
-        name: 'Delete This Column',
-        action: () => {
-          const tableData = props.database.deleteThisColumn(
-            props.tableId,
-            colDef.field
-          )
-          setColumnDefs(tableData.columnDef)
-          setRowData(tableData.rowData)
-        },
-      })
-
-      customMenuItems.push({
+      customMenuItems.unshift({
         name: 'Type',
         subMenu: [
           {
