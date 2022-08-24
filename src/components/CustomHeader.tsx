@@ -1,6 +1,7 @@
 import { ColDef, IHeaderParams } from 'ag-grid-community'
 import Database from 'database'
-import { Notice } from 'obsidian'
+import t from 'i18n'
+import { Menu, Notice, Point } from 'obsidian'
 import React, { useEffect, useRef, useState } from 'react'
 import { TableData } from 'types'
 
@@ -137,8 +138,43 @@ export default (props: HeaderParams) => {
     }
   }, [editable])
 
+  const handleContextMenu = (event: React.MouseEvent<HTMLDivElement>) => {
+    event.preventDefault()
+    const menu = new Menu(app)
+    menu.addItem((item) =>
+      item
+        .setTitle(t('addColumn'))
+        .setIcon('right-arrow')
+        .onClick(() => {
+          const newColumnDefs = props.database.addNewColumn(props.tableId)
+          props.setColumnDefs(newColumnDefs)
+        })
+    )
+
+    menu.addItem((item) => {
+      const colDef = props.column.getColId() as ColDef
+      item
+        .setTitle(t('deleteThisColumn'))
+        .setIcon('trash')
+        .onClick(() => {
+          const tableData = props.database.deleteThisColumn(
+            props.tableId,
+            colDef.field
+          )
+        })
+    })
+
+    const x = event.clientX
+    const y = event.clientY
+    menu.showAtPosition({ x, y } as Point)
+  }
+
   return (
-    <div className="agtable-header" onDoubleClick={handleDoubleClick}>
+    <div
+      className="agtable-header"
+      onDoubleClick={handleDoubleClick}
+      onContextMenu={handleContextMenu}
+    >
       <div className="agtable-header-label">{label}</div>
       {sort}
       <div

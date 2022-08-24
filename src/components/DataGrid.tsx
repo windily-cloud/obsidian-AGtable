@@ -189,6 +189,7 @@ const DataGrid = (props: {
         },
         'copy',
         'copyWithHeaders',
+        'paste',
         'separator',
         'export',
       ]
