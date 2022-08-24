@@ -17,25 +17,26 @@ export default class Database {
   private initDatabase() {
     const adapter = new JSONFileSync<DbData>(this.dbPath)
     this.db = new LowSync(adapter)
+    this.db.read()
+    this.db.data ||= {}
+    this.db.write()
   }
 
   createNewTable(): string {
     const uid = generateUID()
     this.db.read()
 
-    this.db.data ||= {
-      [uid]: {
-        columnDef: [{
-          field: "title",
-          type: "Text"
-        }],
-        rowData: [
-          {
-            'title': ""
-          }
-        ]
-      } as TableData
-    }
+    this.db.data[uid] = {
+      columnDef: [{
+        field: "title",
+        type: "Text"
+      }],
+      rowData: [
+        {
+          'title': ""
+        }
+      ]
+    } as TableData
     //console.log(this.db.data)
     this.db.write()
     return uid
