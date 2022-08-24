@@ -24,7 +24,9 @@ import {
   ValueGetterParams,
   ValueSetterParams,
 } from 'ag-grid-community'
-import URLCellRenderer from './URLCellRender'
+import URLCellRenderer from './URLCellRenderer'
+import FileCellRenderer from './FileCellRenderer'
+import TagsCellRenderer from './TagsCellRenderer'
 
 const DataGrid = (props: {
   settings: AgtableSettings
@@ -61,7 +63,12 @@ const DataGrid = (props: {
     Url: {
       cellRenderer: URLCellRenderer,
     },
-    WikiLink: {},
+    File: {
+      cellRenderer: FileCellRenderer,
+    },
+    Tags: {
+      cellRenderer: TagsCellRenderer,
+    },
   }
 
   const getMainMenuItems = useCallback(
@@ -105,6 +112,30 @@ const DataGrid = (props: {
             checked: colDef.type === 'Text',
           },
           {
+            name: 'File',
+            action: () => {
+              const newColumnDefs = props.database.changeColumnType(
+                props.tableId,
+                colDef,
+                'File'
+              )
+              setColumnDefs(newColumnDefs)
+            },
+            checked: colDef.type === 'File',
+          },
+          {
+            name: 'Tags',
+            action: () => {
+              const newColumnDefs = props.database.changeColumnType(
+                props.tableId,
+                colDef,
+                'Tags'
+              )
+              setColumnDefs(newColumnDefs)
+            },
+            checked: colDef.type === 'Tags',
+          },
+          {
             name: 'Url',
             action: () => {
               const newColumnDefs = props.database.changeColumnType(
@@ -115,18 +146,6 @@ const DataGrid = (props: {
               setColumnDefs(newColumnDefs)
             },
             checked: colDef.type === 'Url',
-          },
-          {
-            name: 'WikiLink',
-            action: () => {
-              const newColumnDefs = props.database.changeColumnType(
-                props.tableId,
-                colDef,
-                'WikiLink'
-              )
-              setColumnDefs(newColumnDefs)
-            },
-            checked: colDef.type === 'WikiLink',
           },
         ],
       })
