@@ -1,3 +1,5 @@
+//copy from obsidian quickadd
+
 import { App, ButtonComponent, Modal } from "obsidian";
 
 export default class GenericYesNoPrompt extends Modal {

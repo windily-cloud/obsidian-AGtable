@@ -16,13 +16,13 @@ import {
   MenuItemDef,
 } from 'ag-grid-enterprise'
 import CustomHeader from './CustomHeader'
-import { Console } from 'console'
 import t from 'i18n'
 import {
   CellEditingStoppedEvent,
   ColumnMovedEvent,
   RowDragEndEvent,
 } from 'ag-grid-community'
+import { cp } from 'fs'
 
 const DataGrid = (props: {
   settings: AgtableSettings
@@ -159,6 +159,7 @@ const DataGrid = (props: {
           },
         },
         'copy',
+        'copyWithHeaders',
         'separator',
         'export',
       ]
@@ -187,13 +188,27 @@ const DataGrid = (props: {
     const toIndex = event.toIndex
     const colId = event.column.getColId()
     props.database.dragColumn(props.tableId, colId, toIndex)
-    props.database.getTableByUID(props.tableId) as TableData
+    const newTableData = props.database.getTableByUID(
+      props.tableId
+    ) as TableData
+    newTableData.columnDef[0]['rowDrag'] = true
+    event.api.setColumnDefs(newTableData.columnDef)
+    event.api.setRowData(newTableData.rowData)
   }
 
   const onRowDragEnd = (event: RowDragEndEvent) => {
     const srcRow = event.node.data
     const toIndex = event.overIndex
     props.database.dargRow(props.tableId, srcRow, toIndex)
+  }
+
+  const statusBar = {
+    statusPanels: [
+      {
+        statusPanel: 'agTotalAndFilteredRowCountComponent',
+        align: 'left',
+      },
+    ],
   }
 
   const onGridReady = useCallback(() => {}, [])
@@ -217,8 +232,9 @@ const DataGrid = (props: {
         columnTypes={columnTypes}
         tooltipShowDelay={6000}
         tooltipHideDelay={1000}
+        statusBar={statusBar}
         animateRows={true} // Optional - set to 'true' to have rows animate when sorted
-        //rowSelection="multiple" // Options - allows click selection of rows
+        rowSelection="multiple" // Options - allows click selection of rows
         enableRangeSelection={true}
         getMainMenuItems={getMainMenuItems}
         getContextMenuItems={getContextMenuItems}

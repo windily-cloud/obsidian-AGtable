@@ -116,8 +116,12 @@ export default (props: HeaderParams) => {
   )
 
   useEffect(() => {
-    if (refInput.current) {
+    let isUnmount = false
+    if (refInput.current && !isUnmount) {
       refInput.current.focus()
+    }
+    return () => {
+      isUnmount = true
     }
   }, [editable])
 

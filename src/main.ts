@@ -13,13 +13,11 @@ import ReactDOM from 'react-dom'
 import Database from 'database'
 
 export interface AgtableSettings {
-  baseURL?: string
-  token?: string
+  databaseName: string
 }
 
 const DEFAULT_SETTINGS = {
-  baseURL: "http://obsidian-nocodb.herokuapp.com",
-  token: "V77hO9tBwV0URSoUU6qbcU-2RQ7f_CM2DCs91dq2",
+  databaseName: 'agtable.json'
 }
 
 export default class AgtablePlugin extends Plugin {
