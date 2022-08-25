@@ -207,17 +207,45 @@ export default class Database {
     this.updateTable(uid, tableData)
   }
 
-  changeColumnType(uid: string, colName: ColDef, newType: string): ColDef[] {
+  changeColumnType(uid: string, colDef: ColDef, newType: string): ColDef[] {
     const tableData = this.getTableByUID(uid) as TableData
     let newColumnDefs = tableData.columnDef
     tableData.columnDef.some((col, index) => {
-      if (col.field === colName.field) {
+      if (col.field === colDef.field) {
         newColumnDefs[index].type = newType
         return true
       }
       return false
     })
+    let newRowData = tableData.rowData
+    if (newType === "Number") {
+      newRowData = newRowData.map((row) => {
+        row[colDef.field] = Number(row[colDef.field])
+        return row
+      })
+    }
+    if (newType === "Text") {
+      newRowData = newRowData.map((row) => {
+        row[colDef.field] = String(row[colDef.field])
+        return row
+      })
+    }
+    tableData.rowData = newRowData
+    tableData.columnDef = newColumnDefs
+    this.updateTable(uid, tableData)
+    return newColumnDefs
+  }
 
+  changeColumnChartType(uid: string, colDef: ColDef, newType: "category" | "series" | "excluded" | "time"): ColDef[] {
+    const tableData = this.getTableByUID(uid) as TableData
+    let newColumnDefs = tableData.columnDef
+    tableData.columnDef.some((col, index) => {
+      if (col.field === colDef.field) {
+        newColumnDefs[index].chartDataType = newType
+        return true
+      }
+      return false
+    })
     tableData.columnDef = newColumnDefs
     this.updateTable(uid, tableData)
     return newColumnDefs

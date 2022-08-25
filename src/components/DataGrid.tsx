@@ -22,7 +22,6 @@ import {
   CellValueChangedEvent,
   ColumnMovedEvent,
   DragStoppedEvent,
-  PasteEndEvent,
   RowDragEndEvent,
 } from 'ag-grid-community'
 import URLCellRenderer from './URLCellRenderer'
@@ -62,6 +61,7 @@ const DataGrid = (props: {
 
   const columnTypes = {
     Text: {},
+    Number: {},
     Url: {
       cellRenderer: URLCellRenderer,
     },
@@ -80,6 +80,64 @@ const DataGrid = (props: {
         params.defaultItems.slice(0)
 
       customMenuItems.unshift({
+        name: 'chartDataType',
+        subMenu: [
+          {
+            name: 'category',
+            action: () => {
+              const newColumnDefs = props.database.changeColumnChartType(
+                props.tableId,
+                colDef,
+                'category'
+              )
+              newColumnDefs[0]['rowDrag'] = true
+              setColumnDefs(newColumnDefs)
+            },
+            checked: colDef.chartDataType === 'category',
+          },
+          {
+            name: 'series',
+            action: () => {
+              const newColumnDefs = props.database.changeColumnChartType(
+                props.tableId,
+                colDef,
+                'series'
+              )
+              newColumnDefs[0]['rowDrag'] = true
+              setColumnDefs(newColumnDefs)
+            },
+            checked: colDef.chartDataType === 'series',
+          },
+          {
+            name: 'time',
+            action: () => {
+              const newColumnDefs = props.database.changeColumnChartType(
+                props.tableId,
+                colDef,
+                'time'
+              )
+              newColumnDefs[0]['rowDrag'] = true
+              setColumnDefs(newColumnDefs)
+            },
+            checked: colDef.chartDataType === 'time',
+          },
+          {
+            name: 'excluded',
+            action: () => {
+              const newColumnDefs = props.database.changeColumnChartType(
+                props.tableId,
+                colDef,
+                'excluded'
+              )
+              newColumnDefs[0]['rowDrag'] = true
+              setColumnDefs(newColumnDefs)
+            },
+            checked: colDef.chartDataType === 'excluded',
+          },
+        ]
+      })
+      
+      customMenuItems.unshift({
         name: 'Type',
         subMenu: [
           {
@@ -94,6 +152,19 @@ const DataGrid = (props: {
               setColumnDefs(newColumnDefs)
             },
             checked: colDef.type === 'Text',
+          },
+          {
+            name: 'Number',
+            action: () => {
+              const newColumnDefs = props.database.changeColumnType(
+                props.tableId,
+                colDef,
+                'Number'
+              )
+              newColumnDefs[0]['rowDrag'] = true
+              setColumnDefs(newColumnDefs)
+            },
+            checked: colDef.type === 'Number',
           },
           {
             name: 'File',
@@ -205,6 +276,7 @@ const DataGrid = (props: {
           },
         },
         'export',
+        'chartRange',
       ]
       return result
     },
@@ -334,6 +406,7 @@ const DataGrid = (props: {
         enableRangeSelection={true}
         getMainMenuItems={getMainMenuItems}
         getContextMenuItems={getContextMenuItems}
+        enableCharts={true}
         onGridReady={onGridReady}
       />
     </div>

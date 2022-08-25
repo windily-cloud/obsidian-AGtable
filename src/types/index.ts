@@ -1,7 +1,7 @@
 import type { ColDef } from 'ag-grid-community'
 
 export interface RowData {
-  [index: string]: string
+  [index: string]: string | number
 }
 export interface TableData {
   columnDef: ColDef[]
