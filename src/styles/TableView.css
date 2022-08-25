@@ -11,6 +11,13 @@
   margin: 0;
   padding: 0;
 }
+
+#table-body .ag-status-bar-left .ag-react-container {
+  margin-left: 6px;
+  margin-right: 6px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
 /* #table-body .agtable-header .agtable-header-menu {
   display: none;
 }

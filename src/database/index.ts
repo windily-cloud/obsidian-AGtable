@@ -1,9 +1,10 @@
-import { RowData } from './../types/index';
+import { RowData, TableInfo } from './../types/index';
 import { ColDef } from 'ag-grid-community';
 import { JSONFileSync, LowSync } from 'lowdb'
 import path from 'path'
 import { generateUID } from '../utils'
 import type { TableData, DbData } from 'types'
+import t from 'i18n';
 
 export default class Database {
   private dbPath: string
@@ -27,6 +28,9 @@ export default class Database {
     this.db.read()
 
     this.db.data[uid] = {
+      tableInfo: {
+        name: t("untitled")
+      },
       columnDef: [{
         field: "title",
         type: "Text"
@@ -51,7 +55,6 @@ export default class Database {
 
     return this.db.data[uid]
   }
-
 
   updateTable(uid: string, tableData: TableData): boolean {
     this.db.read()

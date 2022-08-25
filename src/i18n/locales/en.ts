@@ -1,5 +1,6 @@
 export default {
   welcome: 'Loading Agtable plugin',
+  untitled: 'untitled',
   createTable: 'Create table',
   promptHeader: 'Input table size:(row x column)',
   promptPlaceholder: 'eg:4x3',
@@ -13,7 +14,8 @@ export default {
   renameError: 'Column can not empty',
   singleInput: 'Convert to singleline input',
   multiInput: 'Convert to MultiLine input',
-  // ag-grid
+
+  // ag-grid----------------------------------------------------ag-grid
   // Set Filter
   selectAll: '(Select All)',
   selectAllSearchResults: '(Select All Search Results)',

@@ -27,7 +27,8 @@ import {
 import URLCellRenderer from './URLCellRenderer'
 import FileCellRenderer from './FileCellRenderer'
 import TagsCellRenderer from './TagsCellRenderer'
-import GenericWideInputPrompt from './prompt/GenericWideInputPropmt'
+import GenericWideInputPrompt from './prompt/GenericWideInputPrompt'
+import CustomStatusBar from './CustomStatusBar'
 
 const DataGrid = (props: {
   settings: AgtableSettings
@@ -379,6 +380,14 @@ const DataGrid = (props: {
   const statusBar = {
     statusPanels: [
       {
+        statusPanel: CustomStatusBar,
+        statusPanelParams: {
+          database: props.database,
+          tableId: props.tableId
+        },
+        align: 'left',
+      },
+      {
         statusPanel: 'agTotalAndFilteredRowCountComponent',
         align: 'left',
       },
@@ -416,7 +425,6 @@ const DataGrid = (props: {
   }>(() => {
     return locale
   }, [])
-  const onGridReady = useCallback(() => {}, [])
 
   return (
     <div
@@ -447,7 +455,6 @@ const DataGrid = (props: {
         enableBrowserTooltips={true}
         enableCharts={true}
         localeText={localeText}
-        onGridReady={onGridReady}
       />
     </div>
   )
