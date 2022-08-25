@@ -9,7 +9,7 @@ const localeMap: {[k: string]: Partial<typeof en>} = {
   'zh-cn': zhCN,
 };
 
-const locale = localeMap[moment.locale()];
+export const locale = localeMap[moment.locale()];
 
 export default function t(str: keyof typeof en): string {
   return (locale && locale[str]) || en[str];

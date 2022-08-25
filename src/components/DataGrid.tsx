@@ -16,7 +16,7 @@ import {
   MenuItemDef,
 } from 'ag-grid-enterprise'
 import CustomHeader from './CustomHeader'
-import t from 'i18n'
+import t, { locale } from 'i18n'
 import {
   CellEditingStoppedEvent,
   CellValueChangedEvent,
@@ -411,6 +411,11 @@ const DataGrid = (props: {
     props.database.updateTable(props.tableId, tableData)
   }, [])
 
+  const localeText = useMemo<{
+    [key: string]: string
+  }>(() => {
+    return locale
+  }, [])
   const onGridReady = useCallback(() => {}, [])
 
   return (
@@ -431,8 +436,6 @@ const DataGrid = (props: {
         onDragStopped={onDragStopped}
         stopEditingWhenCellsLoseFocus={true}
         columnTypes={columnTypes}
-        tooltipShowDelay={6000}
-        tooltipHideDelay={1000}
         //sideBar={'columns'}
         onCellValueChanged={onCellValueChanged}
         statusBar={statusBar}
@@ -441,7 +444,9 @@ const DataGrid = (props: {
         enableRangeSelection={true}
         getMainMenuItems={getMainMenuItems}
         getContextMenuItems={getContextMenuItems}
+        enableBrowserTooltips={true}
         enableCharts={true}
+        localeText={localeText}
         onGridReady={onGridReady}
       />
     </div>
