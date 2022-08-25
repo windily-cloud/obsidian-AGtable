@@ -4,6 +4,7 @@ import t from 'i18n'
 import { Menu, Notice, Point } from 'obsidian'
 import React, { useEffect, useRef, useState } from 'react'
 import { TableData } from 'types'
+import GenericYesNoPrompt from './prompt/GenericYesNoPrompt'
 
 interface HeaderParams extends IHeaderParams {
   database: Database
@@ -155,9 +156,12 @@ export default (props: HeaderParams) => {
       item
         .setTitle(t('deleteThisColumn'))
         .setIcon('trash')
-        .onClick(() => {
+        .onClick(async () => {
+          const confirmDelete = await GenericYesNoPrompt.Prompt(app, "Delete this column?", "Irrevocable!")
+          if (!confirmDelete) {
+            return
+          }
           const colId = props.column.getColId()
-          console.log(colId)
           const tableData = props.database.deleteThisColumn(
             props.tableId,
             colId

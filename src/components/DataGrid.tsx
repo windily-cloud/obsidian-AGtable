@@ -34,7 +34,7 @@ const DataGrid = (props: {
   tableId: string
   database: Database
 }) => {
-  const gridRef = useRef()
+  const gridRef = useRef<AgGridReact>(null)
   const tableData = props.database.getTableByUID(props.tableId) as TableData
   tableData.columnDef[0]['rowDrag'] = true
   const [rowData, setRowData] = useState(tableData.rowData)
@@ -80,7 +80,7 @@ const DataGrid = (props: {
         params.defaultItems.slice(0)
 
       customMenuItems.unshift({
-        name: 'chartDataType',
+        name: 'ChartDataType',
         subMenu: [
           {
             name: 'category',
@@ -386,7 +386,7 @@ const DataGrid = (props: {
         statusPanel: 'agAggregationComponent',
         statusPanelParams: {
           // possible values are: 'count', 'sum', 'min', 'max', 'avg'
-          aggFuncs: ['avg', 'sum'],
+          aggFuncs: ['min', 'max', 'avg', 'sum'],
         },
         align: 'left',
       },
