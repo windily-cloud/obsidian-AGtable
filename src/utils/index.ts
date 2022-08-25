@@ -23,12 +23,27 @@ export const hoverFile = (e: MouseEvent, item: any): void => {
 }
 
 export function csvToObject(csvString: string) {
-  const csvarry = csvString.split("\n");
+  const csvArr = csvString.split("\n");
   let datas = [];
-  let headers = csvarry[0].split(",");
-  for (var i = 1; i < csvarry.length; i++) {
+  let headers = csvArr[0].split(",");
+  for (var i = 1; i < csvArr.length; i++) {
     var data = {};
-    var temp = csvarry[i].split(",");
+    var temp = csvArr[i].split(",");
+    for (var j = 0; j < temp.length; j++) {
+      data[headers[j]] = temp[j];
+    }
+    datas.push(data);
+  }
+  return datas;
+}
+
+export function excelToObject(excelString: string) {
+  const excelArr = excelString.split("\n")
+  let datas = []
+  let headers = excelArr[0].split("\t")
+  for (var i = 1; i < excelArr.length; i++) {
+    var data = {};
+    var temp = excelArr[i].split("\t");
     for (var j = 0; j < temp.length; j++) {
       data[headers[j]] = temp[j];
     }

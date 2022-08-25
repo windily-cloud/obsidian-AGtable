@@ -6,7 +6,7 @@ import 'ag-grid-community/dist/styles/ag-theme-alpine-dark.css'
 import 'ag-grid-community/dist/styles/ag-theme-alpine.css'
 import { AgtableSettings } from 'main'
 
-import { csvToObject, isDarkMode } from 'utils'
+import { csvToObject, excelToObject, isDarkMode } from 'utils'
 import Database from 'database'
 import { TableData } from 'types'
 import {
@@ -134,9 +134,9 @@ const DataGrid = (props: {
             },
             checked: colDef.chartDataType === 'excluded',
           },
-        ]
+        ],
       })
-      
+
       customMenuItems.unshift({
         name: 'Type',
         subMenu: [
@@ -250,30 +250,65 @@ const DataGrid = (props: {
         'paste',
         'separator',
         {
-          name: 'import',
-          action: async () => {
-            const inputValue = await GenericWideInputPrompt.Prompt(
-              app,
-              'Input csv format',
-              ''
-            )
-            const csvList = csvToObject(inputValue)
-            console.log(csvList)
-            const columnDefs = Object.keys(csvList[0]).map((key: string) => {
-              return {
-                field: key,
-                type: 'Text',
-              }
-            })
-            csvList.shift()
-            const tableData = {
-              columnDef: columnDefs,
-              rowData: csvList,
-            } as TableData
-            props.database.updateTable(props.tableId, tableData)
-            params.api.setColumnDefs(tableData.columnDef)
-            setRowData(tableData.rowData)
-          },
+          name: 'Import',
+          subMenu: [
+            {
+              name: 'CSV',
+              action: async () => {
+                const inputValue = await GenericWideInputPrompt.Prompt(
+                  app,
+                  'Input csv format',
+                  `eg:(The first line is column name)\nid,name,age,gender\n1,Roberta,39,M\n2,Oliver,25,M\n3,Shayna,18,F\n4,Fechin,18,M`
+                )
+                const csvList = csvToObject(inputValue)
+                //console.log(csvList)
+                const columnDefs = Object.keys(csvList[0]).map(
+                  (key: string) => {
+                    return {
+                      field: key,
+                      type: 'Text',
+                    }
+                  }
+                )
+                csvList.shift()
+                const tableData = {
+                  columnDef: columnDefs,
+                  rowData: csvList,
+                } as TableData
+                props.database.updateTable(props.tableId, tableData)
+                params.api.setColumnDefs(tableData.columnDef)
+                setRowData(tableData.rowData)
+              },
+            },
+            {
+              name: ' Excel',
+              action: async () => {
+                const inputValue = await GenericWideInputPrompt.Prompt(
+                  app,
+                  'Input csv format',
+                  `eg:(The first line is column name)\nid	name	age	gender\n1	Roberta	39	M\n2	Oliver	25	M\n3	Shayna	18	F\n4	Fechin	18	M`
+                )
+                const csvList = excelToObject(inputValue)
+                //console.log(csvList)
+                const columnDefs = Object.keys(csvList[0]).map(
+                  (key: string) => {
+                    return {
+                      field: key,
+                      type: 'Text',
+                    }
+                  }
+                )
+                csvList.shift()
+                const tableData = {
+                  columnDef: columnDefs,
+                  rowData: csvList,
+                } as TableData
+                props.database.updateTable(props.tableId, tableData)
+                params.api.setColumnDefs(tableData.columnDef)
+                setRowData(tableData.rowData)
+              },
+            },
+          ],
         },
         'export',
         'chartRange',
