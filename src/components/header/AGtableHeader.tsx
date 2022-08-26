@@ -4,7 +4,7 @@ import t from 'i18n'
 import { Menu, Notice, Point } from 'obsidian'
 import React, { useEffect, useRef, useState } from 'react'
 import { TableData } from 'types'
-import GenericYesNoPrompt from './prompt/GenericYesNoPrompt'
+import GenericYesNoPrompt from '../prompt/GenericYesNoPrompt'
 
 interface HeaderParams extends IHeaderParams {
   database: Database

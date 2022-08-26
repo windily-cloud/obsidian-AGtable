@@ -15,7 +15,7 @@ import {
   GetMainMenuItemsParams,
   MenuItemDef,
 } from 'ag-grid-enterprise'
-import CustomHeader from './CustomHeader'
+import CustomHeader from './header/AGtableHeader'
 import t, { locale } from 'i18n'
 import {
   CellEditingStoppedEvent,
@@ -24,11 +24,11 @@ import {
   DragStoppedEvent,
   RowDragEndEvent,
 } from 'ag-grid-community'
-import URLCellRenderer from './URLCellRenderer'
-import FileCellRenderer from './FileCellRenderer'
-import TagsCellRenderer from './TagsCellRenderer'
+import URLCellRenderer from './cell-renderer/URLCellRenderer'
+import FileCellRenderer from './cell-renderer/FileCellRenderer'
+import TagsCellRenderer from './cell-renderer/TagsCellRenderer'
 import GenericWideInputPrompt from './prompt/GenericWideInputPrompt'
-import CustomStatusBar from './CustomStatusBar'
+import CustomStatusBar from './status-bar/TableNameStatusBar'
 
 const DataGrid = (props: {
   settings: AgtableSettings
@@ -48,6 +48,9 @@ const DataGrid = (props: {
       editable: true,
       resizable: true,
       cellEditorPopup: true,
+      enablePivot: true,
+      enableRowGroup: true,
+      enableValue: true,
       filter: 'agTextColumnFilter',
       headerComponent: CustomHeader,
       headerComponentParams: {
@@ -383,7 +386,7 @@ const DataGrid = (props: {
         statusPanel: CustomStatusBar,
         statusPanelParams: {
           database: props.database,
-          tableId: props.tableId
+          tableId: props.tableId,
         },
         align: 'left',
       },
@@ -444,7 +447,7 @@ const DataGrid = (props: {
         onDragStopped={onDragStopped}
         stopEditingWhenCellsLoseFocus={true}
         columnTypes={columnTypes}
-        //sideBar={'columns'}
+        sideBar={'columns'}
         onCellValueChanged={onCellValueChanged}
         statusBar={statusBar}
         animateRows={true} // Optional - set to 'true' to have rows animate when sorted

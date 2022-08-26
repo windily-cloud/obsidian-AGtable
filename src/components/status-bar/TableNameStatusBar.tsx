@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { IStatusPanelParams } from 'ag-grid-community'
-import GenericInputPrompt from './prompt/GenericInputPrompt'
+import GenericInputPrompt from '../prompt/GenericInputPrompt'
 import Database from 'database'
 import { TableData } from 'types'
 
