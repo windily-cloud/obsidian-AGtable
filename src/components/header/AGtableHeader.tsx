@@ -157,7 +157,11 @@ export default (props: HeaderParams) => {
         .setTitle(t('deleteThisColumn'))
         .setIcon('trash')
         .onClick(async () => {
-          const confirmDelete = await GenericYesNoPrompt.Prompt(app, "Delete this column?", "Irrevocable!")
+          const confirmDelete = await GenericYesNoPrompt.Prompt(
+            app,
+            'Delete this column?',
+            'Irrevocable!'
+          )
           if (!confirmDelete) {
             return
           }

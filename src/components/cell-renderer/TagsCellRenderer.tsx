@@ -9,18 +9,12 @@ const TagsCellRenderer = (props: ICellRendererParams) => {
 
     tagsList = tags.map((tag: string, index: number) => {
       return (
-        <>
-          <span
-            className="cm-formatting cm-formatting-hashtag cm-hashtag cm-hashtag-begin cm-meta"
-            key={`${tag}`}
-          ></span>
-          <span
-            className="cm-hashtag cm-hashtag-end cm-meta"
-            key={`${tag}-${index}`}
-          >
-            {tag}
-          </span>
-        </>
+        <span
+          className="cm-hashtag cm-hashtag-end cm-meta"
+          key={`${tag}-${index}`}
+        >
+          {tag}
+        </span>
       )
     })
   } else {

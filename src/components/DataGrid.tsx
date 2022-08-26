@@ -22,13 +22,16 @@ import {
   CellValueChangedEvent,
   ColumnMovedEvent,
   DragStoppedEvent,
+  GridReadyEvent,
   RowDragEndEvent,
+  SideBarDef,
 } from 'ag-grid-community'
 import URLCellRenderer from './cell-renderer/URLCellRenderer'
 import FileCellRenderer from './cell-renderer/FileCellRenderer'
 import TagsCellRenderer from './cell-renderer/TagsCellRenderer'
 import GenericWideInputPrompt from './prompt/GenericWideInputPrompt'
 import CustomStatusBar from './status-bar/TableNameStatusBar'
+import SettingsSidebar from './sidebar/SettingsSidebar'
 
 const DataGrid = (props: {
   settings: AgtableSettings
@@ -336,6 +339,7 @@ const DataGrid = (props: {
       console.log('colKey:', colKey)
       console.log('tableData:', tableData)
     }
+    setRowData(tableData.rowData)
   }
 
   // const onColumnMoved = (event: ColumnMovedEvent) => {
@@ -380,6 +384,7 @@ const DataGrid = (props: {
     props.database.dragRow(props.tableId, srcRow, toIndex)
   }
 
+  //status bar
   const statusBar = {
     statusPanels: [
       {
@@ -405,6 +410,39 @@ const DataGrid = (props: {
     ],
   }
 
+  //sidebar
+  const sideBar = useMemo<
+    SideBarDef | string | string[] | boolean | null
+  >(() => {
+    return {
+      toolPanels: [
+        {
+          id: 'settings',
+          labelDefault: 'AGtable Settings',
+          labelKey: 'settings',
+          iconKey: 'menu',
+          toolPanel: SettingsSidebar,
+        },
+        {
+          id: 'columns',
+          labelDefault: 'Columns',
+          labelKey: 'columns',
+          iconKey: 'columns',
+          toolPanel: 'agColumnsToolPanel',
+        },
+        {
+          id: 'filters',
+          labelDefault: 'Filters',
+          labelKey: 'filters',
+          iconKey: 'filter',
+          toolPanel: 'agFiltersToolPanel',
+        },
+      ],
+      defaultToolPanel: 'settings',
+    }
+  }, [])
+
+  //paste
   const onCellValueChanged = useCallback((params: CellValueChangedEvent) => {
     if (params.source != 'paste') {
       return
@@ -429,6 +467,10 @@ const DataGrid = (props: {
     return locale
   }, [])
 
+  const onGridReady = useCallback((params: GridReadyEvent) => {
+    gridRef.current!.api.closeToolPanel()
+  }, [])
+
   return (
     <div
       id="table-body"
@@ -447,7 +489,7 @@ const DataGrid = (props: {
         onDragStopped={onDragStopped}
         stopEditingWhenCellsLoseFocus={true}
         columnTypes={columnTypes}
-        sideBar={'columns'}
+        sideBar={sideBar}
         onCellValueChanged={onCellValueChanged}
         statusBar={statusBar}
         animateRows={true} // Optional - set to 'true' to have rows animate when sorted
@@ -458,6 +500,7 @@ const DataGrid = (props: {
         enableBrowserTooltips={true}
         enableCharts={true}
         localeText={localeText}
+        onGridReady={onGridReady}
       />
     </div>
   )
