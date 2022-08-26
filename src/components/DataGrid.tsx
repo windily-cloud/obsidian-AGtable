@@ -34,6 +34,7 @@ import GenericWideInputPrompt from './prompt/GenericWideInputPrompt'
 import CustomStatusBar from './status-bar/TableNameStatusBar'
 import SettingsSidebar from './sidebar/SettingsSidebar'
 import { QueryResult } from 'obsidian-dataview/lib/api/plugin-api'
+import { Notice } from 'obsidian'
 
 const DataGrid = (props: {
   settings: AgtableSettings
@@ -323,11 +324,14 @@ const DataGrid = (props: {
                 const inputValue = await GenericWideInputPrompt.Prompt(
                   app,
                   'Input csv format',
-                  `eg:(The first line is column name)\nid	name	age	gender\n1	Roberta	39	M\n2	Oliver	25	M\n3	Shayna	18	F\n4	Fechin	18	M`
+                  `eg:table name from "00-tips"`
                 )
                 const dv = getAPI()
                 const queryResult: any = await dv.tryQuery(inputValue)
-                console.log(queryResult)
+                if (queryResult.type != 'table') {
+                  new Notice('Please use table query!')
+                  return
+                }
 
                 const columnDefs = queryResult.headers.map(
                   (headerName: string) => {
