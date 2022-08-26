@@ -20,7 +20,6 @@ export default {
     typescript(),
     nodeResolve({ browser: true }),
     commonjs(),
-    terser(),
     postcss({
       extract: true,
       extract: 'styles.css',

@@ -7,8 +7,9 @@ import 'ag-grid-community/dist/styles/ag-theme-alpine.css'
 import { AgtableSettings } from 'main'
 
 import { csvToObject, excelToObject, isDarkMode } from 'utils'
+import { getAPI, Link } from 'obsidian-dataview'
 import Database from 'database'
-import { TableData } from 'types'
+import { RowData, TableData } from 'types'
 import {
   ColDef,
   GetContextMenuItemsParams,
@@ -32,6 +33,7 @@ import TagsCellRenderer from './cell-renderer/TagsCellRenderer'
 import GenericWideInputPrompt from './prompt/GenericWideInputPrompt'
 import CustomStatusBar from './status-bar/TableNameStatusBar'
 import SettingsSidebar from './sidebar/SettingsSidebar'
+import { QueryResult } from 'obsidian-dataview/lib/api/plugin-api'
 
 const DataGrid = (props: {
   settings: AgtableSettings
@@ -288,7 +290,7 @@ const DataGrid = (props: {
               },
             },
             {
-              name: ' Excel',
+              name: 'Excel',
               action: async () => {
                 const inputValue = await GenericWideInputPrompt.Prompt(
                   app,
@@ -310,6 +312,53 @@ const DataGrid = (props: {
                   columnDef: columnDefs,
                   rowData: csvList,
                 } as TableData
+                props.database.updateTable(props.tableId, tableData)
+                params.api.setColumnDefs(tableData.columnDef)
+                setRowData(tableData.rowData)
+              },
+            },
+            {
+              name: 'Dataview',
+              action: async () => {
+                const inputValue = await GenericWideInputPrompt.Prompt(
+                  app,
+                  'Input csv format',
+                  `eg:(The first line is column name)\nid	name	age	gender\n1	Roberta	39	M\n2	Oliver	25	M\n3	Shayna	18	F\n4	Fechin	18	M`
+                )
+                const dv = getAPI()
+                const queryResult: any = await dv.tryQuery(inputValue)
+                console.log(queryResult)
+
+                const columnDefs = queryResult.headers.map(
+                  (headerName: string) => {
+                    return {
+                      field: headerName,
+                      type: 'Text',
+                    }
+                  }
+                )
+
+                let rowData: RowData[] = []
+                queryResult.values.map((queryArr: any[]) => {
+                  let row = {}
+                  queryArr.forEach(
+                    (queryColumnValue: Link | string, index: number) => {
+                      if (typeof queryColumnValue === 'string') {
+                        row[columnDefs[index].field] = queryColumnValue
+                      } else if (queryColumnValue === null) {
+                        row[columnDefs[index].field] = ''
+                      } else if (queryColumnValue.fileName) {
+                        row[columnDefs[index].field] =
+                          queryColumnValue.fileName()
+                      } else {
+                        throw Error('AGtable need more support this case!')
+                      }
+                    }
+                  )
+                  rowData.push(row)
+                })
+                tableData.columnDef = columnDefs
+                tableData.rowData = rowData
                 props.database.updateTable(props.tableId, tableData)
                 params.api.setColumnDefs(tableData.columnDef)
                 setRowData(tableData.rowData)
